@@ -1,0 +1,23 @@
+/* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  body {
+    @apply bg-brand-light text-brand-dark antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 rounded-lg font-bold text-white bg-brand-primary hover:bg-opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl;
+  }
+  .card {
+    @apply bg-white rounded-xl p-6 border border-gray-200/50;
+  }
+}
