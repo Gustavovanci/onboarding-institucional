@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Credenciais / segredos
+vital-novo-2-firebase-adminsdk-fbsvc-ddd9a057c1.json
