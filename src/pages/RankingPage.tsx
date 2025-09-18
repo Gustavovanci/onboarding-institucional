@@ -1,23 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useGamificationStore } from '../stores/gamificationStore';
+import useGamificationStore from '../stores/gamificationStore';
 import { useAuthStore } from '../stores/authStore';
 import { motion } from 'framer-motion';
-import { 
-  Award, 
-  Trophy, 
-  ChevronDown, 
-  Users, 
+import {
+  Award,
+  Trophy,
+  ChevronDown,
   Globe,
   TrendingUp,
   TrendingDown,
   Crown,
   Medal,
-  Target
 } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { type Instituto, INSTITUTOS_CONFIG } from '../types';
 
-const institutos: Instituto[] = ["ICHC", "InCor", "IOT", "IPQ", "InRad", "IHMP", "ICESP", "Outros"];
+const institutos: Instituto[] = Object.keys(INSTITUTOS_CONFIG) as Instituto[];
 
 const RankingPage = () => {
   const { user } = useAuthStore();
@@ -28,6 +26,7 @@ const RankingPage = () => {
     fetchLeaderboard(filter === 'general' ? undefined : filter);
   }, [fetchLeaderboard, filter]);
 
+  // LÓGICA DE UI MOVIDA PARA O COMPONENTE
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-5 h-5 text-yellow-500" />;
     if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />;
@@ -46,7 +45,7 @@ const RankingPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -99,15 +98,15 @@ const RankingPage = () => {
           <button
             onClick={() => setFilter('general')}
             className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-              filter === 'general' 
-                ? 'bg-blue-600 text-white shadow-lg scale-105' 
+              filter === 'general'
+                ? 'bg-blue-600 text-white shadow-lg scale-105'
                 : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
             }`}
           >
             <Globe className="w-5 h-5" />
             <span>Ranking Geral</span>
           </button>
-          
+
           <div className="relative">
             <select
               value={filter === 'general' ? '' : filter}
@@ -119,7 +118,7 @@ const RankingPage = () => {
                 const config = INSTITUTOS_CONFIG[inst];
                 return (
                   <option key={inst} value={inst}>
-                    {config.fullName} ({inst})
+                    {config.fullName} ({config.name})
                   </option>
                 );
               })}
@@ -129,8 +128,8 @@ const RankingPage = () => {
         </div>
 
         <div className="text-sm text-gray-600">
-          {filter === 'general' 
-            ? 'Mostrando todos os institutos' 
+          {filter === 'general'
+            ? 'Mostrando todos os institutos'
             : `Filtrado por ${INSTITUTOS_CONFIG[filter as Instituto]?.fullName}`
           }
         </div>
@@ -148,7 +147,7 @@ const RankingPage = () => {
             {leaderboard.length >= 3 && (
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-8">
                 <div className="flex items-end justify-center space-x-8">
-                  
+
                   {/* 2nd Place */}
                   <motion.div
                     initial={{ opacity: 0, y: 50 }}
@@ -161,7 +160,7 @@ const RankingPage = () => {
                     </div>
                     <img
                       src={leaderboard[1].photoURL || `https://ui-avatars.com/api/?name=${leaderboard[1].displayName}`}
-                      alt={leaderboard[1].displayName}
+                      alt={leaderboard[1].displayName || ''}
                       className="w-16 h-16 rounded-full mx-auto mb-2 border-4 border-gray-300"
                     />
                     <h3 className="font-bold text-gray-900">{leaderboard[1].displayName}</h3>
@@ -181,7 +180,7 @@ const RankingPage = () => {
                     </div>
                     <img
                       src={leaderboard[0].photoURL || `https://ui-avatars.com/api/?name=${leaderboard[0].displayName}`}
-                      alt={leaderboard[0].displayName}
+                      alt={leaderboard[0].displayName || ''}
                       className="w-20 h-20 rounded-full mx-auto mb-2 border-4 border-yellow-400"
                     />
                     <h3 className="font-bold text-gray-900">{leaderboard[0].displayName}</h3>
@@ -200,7 +199,7 @@ const RankingPage = () => {
                     </div>
                     <img
                       src={leaderboard[2].photoURL || `https://ui-avatars.com/api/?name=${leaderboard[2].displayName}`}
-                      alt={leaderboard[2].displayName}
+                      alt={leaderboard[2].displayName || ''}
                       className="w-16 h-16 rounded-full mx-auto mb-2 border-4 border-orange-400"
                     />
                     <h3 className="font-bold text-gray-900">{leaderboard[2].displayName}</h3>
@@ -225,8 +224,8 @@ const RankingPage = () => {
                 <tbody className="divide-y divide-gray-200">
                   {leaderboard.map((player, index) => {
                     const isCurrentUser = player.uid === user?.uid;
-                    const institutConfig = INSTITUTOS_CONFIG[player.instituto];
-                    
+                    const institutConfig = player.instituto ? INSTITUTOS_CONFIG[player.instituto] : null;
+
                     return (
                       <motion.tr
                         key={player.uid}
@@ -254,7 +253,7 @@ const RankingPage = () => {
                             <div className="relative">
                               <img
                                 src={player.photoURL || `https://ui-avatars.com/api/?name=${player.displayName}`}
-                                alt={player.displayName}
+                                alt={player.displayName || ''}
                                 className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
                               />
                               {isCurrentUser && (
@@ -279,14 +278,16 @@ const RankingPage = () => {
 
                         {/* Instituto */}
                         <td className="px-6 py-4 hidden sm:table-cell">
-                          <div className="flex items-center space-x-2">
-                            <div className={`w-6 h-6 ${institutConfig.color} rounded flex items-center justify-center`}>
-                              <span className="text-white text-xs font-bold">
-                                {institutConfig.name.slice(0, 1)}
-                              </span>
+                          {institutConfig && (
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-6 h-6 ${institutConfig.color} rounded flex items-center justify-center`}>
+                                <span className="text-white text-xs font-bold">
+                                  {institutConfig.name.slice(0, 1)}
+                                </span>
+                              </div>
+                              <span className="text-sm text-gray-900">{player.instituto}</span>
                             </div>
-                            <span className="text-sm text-gray-900">{player.instituto}</span>
-                          </div>
+                          )}
                         </td>
 
                         {/* Pontos */}
@@ -317,7 +318,7 @@ const RankingPage = () => {
             {/* Footer */}
             <div className="bg-gray-50 px-6 py-4 text-center">
               <p className="text-sm text-gray-600">
-                Atualizado a cada 5 minutos • 
+                Atualizado a cada 5 minutos •
                 Total de {leaderboard.length} colaboradores
               </p>
             </div>

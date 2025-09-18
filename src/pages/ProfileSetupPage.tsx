@@ -5,7 +5,7 @@ import { useAuthStore, type UserProfile } from '../stores/authStore';
 import { motion } from 'framer-motion';
 import { UserCheck, Briefcase, Building } from 'lucide-react';
 
-const institutes = ["ICHC", "INRAD", "INCOR", "IOT", "IMREA", "ICESP", "ICr", "IPq", "Iper"];
+const institutes = ["ICHC", "INRAD", "INCOR", "IOT", "IMREA", "ICESP", "ICr", "IPq", "IPer", "PA", "LIMs"];
 const professions = ["Médico(a)", "Enfermeiro(a)", "Técnico(a) de Enfermagem", "Fisioterapeuta", "Nutricionista", "Psicólogo(a)", "Terapeuta Ocupacional", "Administrativo", "Voluntário(a)", "Técnico(a) em Nutrição"];
 
 const ProfileSetupPage = () => {

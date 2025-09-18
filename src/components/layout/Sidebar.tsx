@@ -1,9 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { Home, BookOpen, User, Sparkles, TrendingUp, Clock } from 'lucide-react';
-import { type Module } from '../../types'; // Ajuste o caminho se necessário
-
-// Remova a lista estática daqui, pois os módulos agora vêm da Dashboard
+import { Home, User, Sparkles, TrendingUp, Clock, Trophy } from 'lucide-react'; // Ícone 'Trophy' adicionado
 
 const Sidebar = () => {
   const { user } = useAuthStore();
@@ -14,8 +11,8 @@ const Sidebar = () => {
   
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Ranking', href: '/ranking', icon: Trophy }, // <-- NOVO LINK ADICIONADO
     { name: 'Meu Perfil', href: '/profile', icon: User },
-    // Adicione outras rotas fixas aqui, como Progresso, etc.
   ];
 
   return (
@@ -100,3 +97,5 @@ const Sidebar = () => {
     </div>
   );
 }
+
+export default Sidebar;

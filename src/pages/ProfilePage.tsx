@@ -1,10 +1,10 @@
-// src/pages/ProfilePage.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { motion } from 'framer-motion';
-import { User, Edit3, Save, X, Building, Briefcase } from 'lucide-react'; // Ícone da Câmera removido
+import { User, Edit3, Save, X, Building, Briefcase } from 'lucide-react';
+import { type Instituto } from '../types';
 
-const institutes = ["ICHC", "INRAD", "INCOR", "IOT", "IMREA", "ICESP", "ICr", "IPq", "Iper"];
+const institutes: Instituto[] = ["ICHC", "InCor", "IOT", "IPQ", "InRad", "IMREA", "ICESP", "PA", "LIMs","ICr", "IPer" ];
 const professions = ["Médico(a)", "Enfermeiro(a)", "Técnico(a) de Enfermagem", "Fisioterapeuta", "Nutricionista", "Psicólogo(a)", "Terapeuta Ocupacional", "Administrativo", "Voluntário(a)", "Técnico(a) em Nutrição"];
 
 const ProfilePage = () => {
@@ -12,12 +12,23 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
-    institute: user?.institute || '',
+    instituto: user?.instituto || 'ICHC',
     profession: user?.profession || '',
     bio: user?.bio || '',
   });
   const [isSaving, setIsSaving] = useState(false);
-  // A ref para o input de arquivo foi removida
+
+  // Sincroniza o formulário se os dados do usuário no store forem atualizados
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        displayName: user.displayName,
+        instituto: user.instituto,
+        profession: user.profession || '',
+        bio: user.bio || '',
+      });
+    }
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -25,21 +36,21 @@ const ProfilePage = () => {
   };
 
   const handleSave = async () => {
+    if (!user) return;
+
     setIsSaving(true);
-    await updateUserProfile({
+    await updateUserProfile(user.uid, {
         displayName: formData.displayName,
-        institute: formData.institute,
+        instituto: formData.instituto as Instituto,
         profession: formData.profession,
         bio: formData.bio,
     });
     setIsSaving(false);
     setIsEditing(false);
   };
-  
-  // A função handlePictureChange foi removida
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div className="card-elevated max-w-4xl mx-auto">
         {/* Header do Perfil */}
         <div className="flex flex-col sm:flex-row items-center space-y-6 sm:space-y-0 sm:space-x-8 p-8 border-b border-gray-200">
@@ -49,16 +60,15 @@ const ProfilePage = () => {
               alt="Avatar"
               className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
             />
-            {/* O botão da câmera foi removido daqui */}
           </div>
           <div className="flex-1 text-center sm:text-left">
             {isEditing ? (
-              <input 
-                type="text" 
+              <input
+                type="text"
                 name="displayName"
-                value={formData.displayName} 
-                onChange={handleInputChange} 
-                className="text-3xl font-bold text-gray-900 bg-gray-100 rounded-lg p-2 w-full"
+                value={formData.displayName}
+                onChange={handleInputChange}
+                className="text-3xl font-bold text-gray-900 bg-gray-100 rounded-lg p-2 w-full border-2 border-gray-200 focus:border-blue-500 focus:ring-0"
               />
             ) : (
               <h1 className="text-3xl font-bold text-gray-900">{user?.displayName}</h1>
@@ -74,10 +84,9 @@ const ProfilePage = () => {
             </div>
           )}
         </div>
-        
+
         {/* Corpo do Perfil */}
         <div className="p-8 space-y-6">
-          {/* Bio */}
           <div>
             <h3 className="font-semibold text-gray-800 mb-2">Sua Bio</h3>
             {isEditing ? (
@@ -87,25 +96,24 @@ const ProfilePage = () => {
                 onChange={handleInputChange}
                 rows={4}
                 placeholder="Escreva um pouco sobre você..."
-                className="w-full p-3 bg-gray-100 rounded-lg"
+                className="w-full p-3 bg-gray-100 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-0"
               />
             ) : (
-              <p className="text-gray-600 italic">{user?.bio || 'Nenhuma bio adicionada.'}</p>
+              <p className="text-gray-600 italic prose">{user?.bio || 'Nenhuma bio adicionada. Clique em "Editar Perfil" para adicionar uma.'}</p>
             )}
           </div>
           <hr/>
-          {/* Detalhes */}
           <div className="grid md:grid-cols-2 gap-6">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center"><Building className="w-6 h-6 text-blue-600"/></div>
               <div>
                 <p className="text-sm text-gray-500">Instituto</p>
                 {isEditing ? (
-                  <select name="institute" value={formData.institute} onChange={handleInputChange} className="font-semibold text-gray-800 bg-gray-100 rounded-lg p-2">
+                  <select name="instituto" value={formData.instituto} onChange={handleInputChange} className="font-semibold text-gray-800 bg-gray-100 rounded-lg p-2 border-2 border-gray-200 focus:border-blue-500 focus:ring-0">
                     {institutes.map(i => <option key={i} value={i}>{i}</option>)}
                   </select>
                 ) : (
-                  <p className="font-semibold text-gray-800">{user?.institute}</p>
+                  <p className="font-semibold text-gray-800">{user?.instituto}</p>
                 )}
               </div>
             </div>
@@ -114,7 +122,7 @@ const ProfilePage = () => {
               <div>
                 <p className="text-sm text-gray-500">Profissão</p>
                 {isEditing ? (
-                  <select name="profession" value={formData.profession} onChange={handleInputChange} className="font-semibold text-gray-800 bg-gray-100 rounded-lg p-2">
+                  <select name="profession" value={formData.profession} onChange={handleInputChange} className="font-semibold text-gray-800 bg-gray-100 rounded-lg p-2 border-2 border-gray-200 focus:border-green-500 focus:ring-0">
                     {professions.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 ) : (

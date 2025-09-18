@@ -57,11 +57,11 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
             points: currentUser.points + module.points,
             completedModules: [...currentUser.completedModules, module.id]
         };
-        // Chama a função de atualização do authStore
-        authState.updateUserProfile(userId, updatedUser);
+        // CORREÇÃO: A função updateUserProfile espera apenas um objeto com os dados.
+        authState.updateUserProfile(updatedUser);
         
         // Verifica se algum badge foi conquistado
-        await get().checkAndAwardBadges(updatedUser);
+        await get().checkAndAwardBadges(updatedUser as User); // Faz o cast para o tipo User completo
       }
 
     } catch (error) {
@@ -80,7 +80,7 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
 
         let earned = false;
         // Lógica para o badge 'Primeiro Passo'
-        if(badge.id === 'first-module' && user.completedModules.length >= badge.requirements.modulesCompleted) {
+        if(badge.id === 'first-module' && user.completedModules.length >= badge.requirements.modulesCompleted!) {
             earned = true;
         }
 
@@ -93,7 +93,7 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
                 points: increment(badge.points)
             });
             // Atualiza o estado local
-            useAuthStore.getState().updateUserProfile(user.uid, {
+            useAuthStore.getState().updateUserProfile({
                 badges: [...user.badges, badge.id],
                 points: user.points + badge.points
             });

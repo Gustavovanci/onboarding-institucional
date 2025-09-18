@@ -3,8 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import { useAuthStore } from '../stores/authStore';
-import { useProgressStore } from '../stores/progressStore';
-import { type Module } from '../types';
+import { useProgressStore } from '../stores/progressStore'; // Caminho corrigido após renomear
+import { type Module } from '../types'; // Importando do arquivo de tipos central
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 
@@ -30,11 +30,14 @@ const ModulePage = () => {
     fetchModule();
   }, [moduleId]);
 
-  const isCompleted = user?.completedModules.includes(moduleId || '');
+  // A verificação de user?.completedModules precisa de um tipo User completo
+  const userProfile = useAuthStore(state => state.user);
+  const isCompleted = userProfile?.completedModules?.includes(moduleId || '');
 
   const handleCompleteModule = () => {
     if (user && module && !isCompleted) {
-      completeModule(user.uid, module);
+      // Passando os dados corretos para a função
+      completeModule(user.uid, { id: module.id, points: module.points, isRequired: true }); // Assumindo que isRequired é true
     }
   };
 
