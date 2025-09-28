@@ -1,136 +1,138 @@
+// src/pages/ProfilePage.tsx
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { motion } from 'framer-motion';
-import { User, Edit3, Save, X, Building, Briefcase } from 'lucide-react';
-import { type Instituto } from '../types';
-
-const institutes: Instituto[] = ["ICHC", "InCor", "IOT", "IPQ", "InRad", "IMREA", "ICESP", "PA", "LIMs","ICr", "IPer" ];
-const professions = ["Médico(a)", "Enfermeiro(a)", "Técnico(a) de Enfermagem", "Fisioterapeuta", "Nutricionista", "Psicólogo(a)", "Terapeuta Ocupacional", "Administrativo", "Voluntário(a)", "Técnico(a) em Nutrição"];
+import { Edit3, Save, X, Building, Briefcase, Palette, Heart, Star } from 'lucide-react';
+import { INSTITUTOS_CONFIG } from '../types';
+import { COLOR_THEMES, STATUS_EMOJIS, CUSTOM_TITLES } from '../config/personalization';
 
 const ProfilePage = () => {
   const { user, updateUserProfile } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'basic' | 'personal'>('basic');
+  
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
-    instituto: user?.instituto || 'ICHC',
-    profession: user?.profession || '',
     bio: user?.bio || '',
+    colorTheme: user?.personalizations?.colorTheme || 'classic',
+    statusEmoji: user?.personalizations?.statusEmoji || 'happy',
+    customTitle: user?.personalizations?.customTitle || 'explorer',
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // Sincroniza o formulário se os dados do usuário no store forem atualizados
   useEffect(() => {
-    if (user) {
+    if (user && !isEditing) {
       setFormData({
         displayName: user.displayName,
-        instituto: user.instituto,
-        profession: user.profession || '',
         bio: user.bio || '',
+        colorTheme: user.personalizations?.colorTheme || 'classic',
+        statusEmoji: user.personalizations?.statusEmoji || 'happy',
+        customTitle: user.personalizations?.customTitle || 'explorer',
       });
     }
-  }, [user]);
+  }, [user, isEditing]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+  
+  // ++ CORREÇÃO: FUNÇÃO DEDICADA PARA ATUALIZAR A PERSONALIZAÇÃO ++
+  // Isso garante que o estado seja atualizado de forma mais clara e reativa.
+  const handlePersonalizationChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
-    if (!user) return;
-
     setIsSaving(true);
-    await updateUserProfile(user.uid, {
+    try {
+      await updateUserProfile({
         displayName: formData.displayName,
-        instituto: formData.instituto as Instituto,
-        profession: formData.profession,
         bio: formData.bio,
-    });
-    setIsSaving(false);
-    setIsEditing(false);
+        personalizations: {
+          colorTheme: formData.colorTheme,
+          statusEmoji: formData.statusEmoji,
+          customTitle: formData.customTitle,
+          favoriteQuote: user?.personalizations?.favoriteQuote || "",
+        }
+      });
+      setIsEditing(false);
+    } catch (error) { console.error("Erro ao salvar perfil:", error);
+    } finally { setIsSaving(false); }
   };
+
+  if (!user) return <div>Carregando...</div>;
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-      <div className="card-elevated max-w-4xl mx-auto">
-        {/* Header do Perfil */}
-        <div className="flex flex-col sm:flex-row items-center space-y-6 sm:space-y-0 sm:space-x-8 p-8 border-b border-gray-200">
-          <div className="relative">
-            <img
-              src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.displayName}&size=128&background=random`}
-              alt="Avatar"
-              className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-            />
-          </div>
+      <div className="bg-white rounded-2xl shadow-lg p-0 overflow-hidden max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-center space-y-6 sm:space-y-0 sm:space-x-8 p-8 border-b">
+          <img src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} alt="Avatar" className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"/>
           <div className="flex-1 text-center sm:text-left">
             {isEditing ? (
-              <input
-                type="text"
-                name="displayName"
-                value={formData.displayName}
-                onChange={handleInputChange}
-                className="text-3xl font-bold text-gray-900 bg-gray-100 rounded-lg p-2 w-full border-2 border-gray-200 focus:border-blue-500 focus:ring-0"
-              />
-            ) : (
-              <h1 className="text-3xl font-bold text-gray-900">{user?.displayName}</h1>
-            )}
-            <p className="text-gray-500 mt-1">{user?.email}</p>
+              <input type="text" name="displayName" value={formData.displayName} onChange={handleInputChange} className="text-3xl font-bold text-gray-900 bg-gray-100 rounded-lg p-2 w-full"/>
+            ) : ( <h1 className="text-3xl font-bold text-gray-900">{user.displayName}</h1> )}
+            <p className="text-gray-500 mt-1">{user.email}</p>
           </div>
           {!isEditing ? (
-            <button onClick={() => setIsEditing(true)} className="btn-secondary flex items-center space-x-2"><Edit3 className="w-4 h-4"/><span>Editar Perfil</span></button>
+            <button onClick={() => setIsEditing(true)} className="btn-secondary flex items-center gap-2"><Edit3 className="w-4 h-4"/><span>Editar Perfil</span></button>
           ) : (
-            <div className="flex space-x-2">
-              <button onClick={handleSave} className="btn-primary flex items-center space-x-2" disabled={isSaving}><Save className="w-4 h-4"/><span>{isSaving ? 'Salvando...' : 'Salvar'}</span></button>
-              <button onClick={() => setIsEditing(false)} className="p-3 bg-gray-200 rounded-lg text-gray-600 hover:bg-gray-300"><X className="w-4 h-4"/></button>
+            <div className="flex gap-2">
+              <button onClick={handleSave} className="btn-primary flex items-center gap-2" disabled={isSaving}><Save className="w-4 h-4"/><span>{isSaving ? "Salvando..." : "Salvar"}</span></button>
+              <button onClick={() => setIsEditing(false)} className="p-3 bg-gray-200 rounded-xl text-gray-600 hover:bg-gray-300"><X className="w-4 h-4"/></button>
             </div>
           )}
         </div>
 
-        {/* Corpo do Perfil */}
-        <div className="p-8 space-y-6">
-          <div>
-            <h3 className="font-semibold text-gray-800 mb-2">Sua Bio</h3>
-            {isEditing ? (
-              <textarea
-                name="bio"
-                value={formData.bio}
-                onChange={handleInputChange}
-                rows={4}
-                placeholder="Escreva um pouco sobre você..."
-                className="w-full p-3 bg-gray-100 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-0"
-              />
-            ) : (
-              <p className="text-gray-600 italic prose">{user?.bio || 'Nenhuma bio adicionada. Clique em "Editar Perfil" para adicionar uma.'}</p>
-            )}
+        {isEditing && (
+          <div className="p-2 bg-gray-50 border-b flex justify-center gap-2">
+            <button onClick={() => setActiveTab('basic')} className={`px-4 py-2 rounded-lg font-semibold text-sm ${activeTab === 'basic' ? 'bg-brand-azure text-white' : 'text-gray-600 hover:bg-gray-200'}`}>Básico</button>
+            <button onClick={() => setActiveTab('personal')} className={`px-4 py-2 rounded-lg font-semibold text-sm ${activeTab === 'personal' ? 'bg-brand-azure text-white' : 'text-gray-600 hover:bg-gray-200'}`}>Personalização</button>
           </div>
-          <hr/>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center"><Building className="w-6 h-6 text-blue-600"/></div>
+        )}
+
+        <div className="p-8">
+          {(!isEditing || activeTab === 'basic') && (
+            <div className="space-y-6">
               <div>
-                <p className="text-sm text-gray-500">Instituto</p>
+                <h3 className="font-semibold text-gray-800 mb-2">Sua Bio</h3>
                 {isEditing ? (
-                  <select name="instituto" value={formData.instituto} onChange={handleInputChange} className="font-semibold text-gray-800 bg-gray-100 rounded-lg p-2 border-2 border-gray-200 focus:border-blue-500 focus:ring-0">
-                    {institutes.map(i => <option key={i} value={i}>{i}</option>)}
-                  </select>
-                ) : (
-                  <p className="font-semibold text-gray-800">{user?.instituto}</p>
-                )}
+                  <textarea name="bio" value={formData.bio} onChange={handleInputChange} rows={4} className="w-full p-3 bg-gray-100 rounded-lg"/>
+                ) : ( <p className="text-gray-600 italic">{user.bio || 'Nenhuma bio adicionada.'}</p> )}
+              </div>
+              <hr />
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex items-center gap-3"><div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center"><Building className="w-6 h-6 text-brand-azure"/></div><div><p className="text-sm text-gray-500">Instituto</p><p className="font-semibold text-gray-800">{INSTITUTOS_CONFIG[user.instituto]?.fullName || user.instituto}</p></div></div>
+                <div className="flex items-center gap-3"><div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center"><Briefcase className="w-6 h-6 text-brand-teal"/></div><div><p className="text-sm text-gray-500">Profissão</p><p className="font-semibold text-gray-800">{user.profession || 'Não definida'}</p></div></div>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center"><Briefcase className="w-6 h-6 text-green-600"/></div>
+          )}
+          
+          {isEditing && activeTab === 'personal' && (
+            <div className="space-y-8">
               <div>
-                <p className="text-sm text-gray-500">Profissão</p>
-                {isEditing ? (
-                  <select name="profession" value={formData.profession} onChange={handleInputChange} className="font-semibold text-gray-800 bg-gray-100 rounded-lg p-2 border-2 border-gray-200 focus:border-green-500 focus:ring-0">
-                    {professions.map(p => <option key={p} value={p}>{p}</option>)}
-                  </select>
-                ) : (
-                  <p className="font-semibold text-gray-800">{user?.profession}</p>
-                )}
+                <label className="font-semibold text-gray-700 flex items-center gap-2 mb-3"><Palette className="w-5 h-5"/>Tema de Cores</label>
+                <div className="flex flex-wrap gap-3">
+                  {COLOR_THEMES.map(theme => (
+                    <button key={theme.id} onClick={() => handlePersonalizationChange('colorTheme', theme.id)} className={`w-12 h-12 rounded-full ${theme.primary} transition-transform hover:scale-110 ${formData.colorTheme === theme.id ? 'ring-4 ring-offset-2 ring-brand-azure' : ''}`} title={theme.name}></button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="font-semibold text-gray-700 flex items-center gap-2 mb-3"><Heart className="w-5 h-5"/>Emoji de Status</label>
+                <div className="flex flex-wrap gap-2">
+                  {STATUS_EMOJIS.map(emoji => (
+                    <button key={emoji.id} onClick={() => handlePersonalizationChange('statusEmoji', emoji.id)} className={`text-4xl p-2 rounded-lg transition-all ${formData.statusEmoji === emoji.id ? 'bg-blue-100 scale-110' : 'hover:bg-gray-100'}`} title={emoji.name}>{emoji.emoji}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="font-semibold text-gray-700 flex items-center gap-2 mb-2"><Star className="w-5 h-5"/>Título</label>
+                <select name="customTitle" value={formData.customTitle} onChange={handleInputChange} className="w-full p-3 bg-gray-100 rounded-lg">
+                  {CUSTOM_TITLES.map(title => <option key={title.id} value={title.id}>{title.icon} {title.title}</option>)}
+                </select>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </motion.div>

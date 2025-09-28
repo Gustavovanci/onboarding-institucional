@@ -1,9 +1,13 @@
+// src/types/index.ts
+
+// DEFINIÇÃO DO TIPO (usado para type-checking)
 export type Instituto =
   | "ICHC" | "InCor" | "IOT" | "IPQ" | "InRad" | "ICr"
   | "ICESP" | "IMREA" | "LIMs" | "IPer" | "PA" | "Outros";
 
 export type Role = "employee" | "coordinator" | "admin";
 
+// INTERFACE DE PERSONALIZAÇÕES - MOVIDA PARA CÁ E EXPORTADA
 export interface UserPersonalizations {
   colorTheme: string;
   statusEmoji: string;
@@ -11,13 +15,14 @@ export interface UserPersonalizations {
   favoriteQuote: string;
 }
 
+// INTERFACE User ATUALIZADA para usar a interface UserPersonalizations
 export interface User {
   uid: string;
   email: string;
   displayName: string;
   photoURL: string | null;
   instituto: Instituto;
-  role: Role;
+  role?: Role;
   profession?: string;
   bio?: string;
   points: number;
@@ -35,24 +40,54 @@ export interface User {
   personalizations?: UserPersonalizations;
 }
 
-// ADICIONADO: Export do array de institutos
+export interface InstitutoConfig {
+  name: Instituto;
+  fullName: string;
+  logo: string;
+  color: string;
+}
+
+// ==================================================================
+// == CONSTANTES (valores usados no código JavaScript) ==
+// ==================================================================
+
+// EXPORTANDO O ARRAY DE NOMES
 export const INSTITUTOS_ARRAY: Instituto[] = [
-  "ICHC", "InCor", "IOT", "IPQ", "InRad", "ICr", 
+  "ICHC", "InCor", "IOT", "IPQ", "InRad", "ICr",
   "ICESP", "IMREA", "LIMs", "IPer", "PA", "Outros"
 ];
 
-// ADICIONADO: Export da configuração dos institutos
-export const INSTITUTOS_CONFIG: Record<Instituto, { name: string; fullName: string; logo: string }> = {
-  ICHC: { name: "ICHC", fullName: "Instituto de Câncer de Hospital das Clínicas", logo: "logo-ichc.png" },
-  InCor: { name: "InCor", fullName: "Instituto do Coração", logo: "logo-incor.png" },
-  IOT: { name: "IOT", fullName: "Instituto de Ortopedia e Traumatologia", logo: "logo-iot.png" },
-  IPQ: { name: "IPQ", fullName: "Instituto de Psiquiatria", logo: "logo-ipq.png" },
-  InRad: { name: "InRad", fullName: "Instituto de Radiologia", logo: "logo-inrad.png" },
-  ICr: { name: "ICr", fullName: "Instituto de Cardiologia", logo: "logo-icr.png" },
-  ICESP: { name: "ICESP", fullName: "Instituto do Câncer do Estado de São Paulo", logo: "logo-icesp.png" },
-  IMREA: { name: "IMREA", fullName: "Instituto de Medicina Reprodutiva", logo: "logo-imrea.png" },
-  LIMs: { name: "LIMs", fullName: "Laboratório de Investigação Médica", logo: "logo-lims.png" },
-  IPer: { name: "IPer", fullName: "Instituto de Pesquisa", logo: "logo-iper.png" },
-  PA: { name: "PA", fullName: "Pediatria e Adolescentes", logo: "logo-pa.png" },
-  Outros: { name: "Outros", fullName: "Outros Institutos", logo: "logo-outros.png" }
+// ADICIONADO: Array de profissões que estava faltando
+export const PROFESSIONS_ARRAY: string[] = [
+  "Médico(a)",
+  "Enfermeiro(a)",
+  "Fisioterapeuta", 
+  "Psicólogo(a)",
+  "Nutricionista",
+  "Farmacêutico(a)",
+  "Biomédico(a)",
+  "Técnico(a) de Enfermagem",
+  "Técnico(a) de Laboratório",
+  "Técnico(a) de Radiologia",
+  "Assistente Social",
+  "Fonoaudiólogo(a)",
+  "Terapeuta Ocupacional",
+  "Administrador(a)",
+  
+];
+
+// EXPORTANDO O OBJETO DE CONFIGURAÇÃO
+export const INSTITUTOS_CONFIG: Record<Instituto, InstitutoConfig> = {
+  "ICHC": { name: "ICHC", fullName: "Instituto Central do HCFMUSP", logo: "/logos/ichc.png", color: "bg-blue-500" },
+  "InCor": { name: "InCor", fullName: "Instituto do Coração", logo: "/logos/incor.png", color: "bg-red-500" },
+  "IOT": { name: "IOT", fullName: "Inst. de Ortopedia e Traumatologia", logo: "/logos/iot.png", color: "bg-green-500" },
+  "IPQ": { name: "IPQ", fullName: "Instituto de Psiquiatria", logo: "/logos/ipq.png", color: "bg-purple-500" },
+  "InRad": { name: "InRad", fullName: "Instituto de Radiologia", logo: "/logos/inrad.png", color: "bg-yellow-500" },
+  "ICr": { name: "ICr", fullName: "Inst. da Criança e do Adolescente", logo: "/logos/icr.png", color: "bg-pink-500" },
+  "ICESP": { name: "ICESP", fullName: "Instituto do Câncer de SP", logo: "/logos/icesp.png", color: "bg-indigo-500" },
+  "IMREA": { name: "IMREA", fullName: "Inst. de Medicina Física e Reabilitação", logo: "/logos/imrea.png", color: "bg-teal-500" },
+  "LIMs": { name: "LIMs", fullName: "Labs. de Investigação Médica", logo: "/logos/lims.png", color: "bg-gray-500" },
+  "IPer": { name: "IPer", fullName: "Inst. de Infectologia Emílio Ribas", logo: "/logos/iper.png", color: "bg-orange-500" },
+  "PA": { name: "PA", fullName: "Pronto Atendimento", logo: "/logos/pa.png", color: "bg-cyan-500" },
+  "Outros": { name: "Outros", fullName: "Outros Institutos", logo: "/logos/default.png", color: "bg-slate-400" },
 };
