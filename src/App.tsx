@@ -1,28 +1,28 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { useAuthStore } from './stores/authStore';
-import Layout from './components/layout/Layout';
-import LoadingSpinner from './components/ui/LoadingSpinner';
-import ProtectedRoute from './components/auth/ProtectedRoute'; // Linha corrigida, sem chaves.
-import ProfileCheck from './components/auth/ProfileCheck';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
+import { useEffect } from "react";
+import { useAuthStore } from "./stores/authStore";
+import Layout from "./components/layout/Layout";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import ProfileCheck from "./components/auth/ProfileCheck";
 
 // Pages
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import ProfilePage from './pages/ProfilePage';
-import ProfileSetupPage from './pages/ProfileSetupPage';
-import RankingPage from './pages/RankingPage';
-import ModulePage from './pages/ModulePage';
-import ContentPage from './pages/ContentPage';
+import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/LoginPage";
+import DashboardPage from "./pages/DashboardPage";
+import ProfilePage from "./pages/ProfilePage";
+import ProfileSetupPage from "./pages/ProfileSetupPage";
+import RankingPage from "./pages/RankingPage";
+import ModulePage from "./pages/ModulePage";
+import ContentPage from "./pages/ContentPage";
 
 function App() {
-  const { user, isLoading, isAuthenticated, initializeAuthListener } = useAuthStore();
+  const { isLoading, isAuthenticated, initializeAuthListener } = useAuthStore();
 
   useEffect(() => {
     const unsubscribe = initializeAuthListener();
     return unsubscribe;
-  }, [initializeAuthListener]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -38,34 +38,28 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
-        <Route 
-          path="/" 
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} 
-        />
-        <Route 
-          path="/login" 
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} 
-        />
+        {/* Rotas Públicas */}
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
 
-        {/* Profile Setup Route */}
-        <Route 
-          path="/profile-setup" 
+        {/* Rota para o Setup do Perfil */}
+        <Route
+          path="/profile-setup"
           element={
             <ProtectedRoute>
               <ProfileSetupPage />
             </ProtectedRoute>
-          } 
+          }
         />
 
-        {/* Protected Routes with Profile Check */}
+        {/* Rotas Protegidas que exigem que o perfil esteja completo */}
         <Route element={<ProtectedRoute><ProfileCheck /></ProtectedRoute>}>
           <Route path="/dashboard" element={<Layout><DashboardPage /></Layout>} />
           <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
           <Route path="/ranking" element={<Layout><RankingPage /></Layout>} />
           <Route path="/modules/:moduleId" element={<Layout><ModulePage /></Layout>} />
           
-          {/* Content Pages for Firebase modules */}
+          {/* Páginas de Conteúdo Estático */}
           <Route path="/institucional" element={<Layout><ContentPage pageId="institucional" /></Layout>} />
           <Route path="/identificacao" element={<Layout><ContentPage pageId="identificacao" /></Layout>} />
           <Route path="/sistemas" element={<Layout><ContentPage pageId="sistemas" /></Layout>} />
@@ -74,18 +68,23 @@ function App() {
           <Route path="/relacionamentos" element={<Layout><ContentPage pageId="relacionamentos" /></Layout>} />
         </Route>
 
-        {/* 404 */}
-        <Route path="*" element={
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-              <h1 className="text-4xl font-bold text-gray-900">404</h1>
-              <p className="text-gray-600">Página não encontrada</p>
+        {/* Página 404 */}
+        <Route
+          path="*"
+          element={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-center">
+                <h1 className="text-4xl font-bold text-gray-900">404</h1>
+                <p className="text-gray-600">Página não encontrada</p>
+                <Link to="/" className="text-blue-600 hover:underline mt-4 inline-block">Voltar ao início</Link>
+              </div>
             </div>
-          </div>
-        } />
+          }
+        />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+

@@ -1,14 +1,15 @@
-// src/components/layout/Header.tsx - VERSÃO SIMPLIFICADA
-import { LogOut, Bell, Settings, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { LogOut, Bell, Settings, User as UserIcon } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import useNotificationStore from '../../stores/notificationStore';
 import { useState, useEffect } from 'react';
-import { INSTITUTOS_CONFIG } from '../../types';
-import BadgeDisplay from '../badges/BadgeDisplay';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import BadgeDisplay from '../badges/BadgeDisplay'; // Agora este arquivo existe
 
 export default function Header() {
   const { user, logout } = useAuthStore();
-  const { notifications, unreadCount, fetchNotifications, markAsRead } = useNotificationStore();
+  const { notifications, unreadCount, fetchNotifications } = useNotificationStore();
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
@@ -17,160 +18,87 @@ export default function Header() {
     }
   }, [user, fetchNotifications]);
 
-  const getRankingTrend = () => {
-    if (!user || !user.previousRank || user.currentRank === 0) return 'same';
-    if (user.currentRank < user.previousRank) return 'up';
-    if (user.currentRank > user.previousRank) return 'down';
-    return 'same';
-  };
-
-  const rankingTrend = getRankingTrend();
-
-  const getTrendIcon = () => {
-    switch (rankingTrend) {
-      case 'up': return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'down': return <TrendingDown className="w-4 h-4 text-red-500" />;
-      default: return <Minus className="w-4 h-4 text-gray-400" />;
-    }
-  };
-
+  // Se não houver usuário, não renderiza nada no header.
   if (!user) return null;
 
   return (
-    <header className="bg-white/95 backdrop-blur-xl border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
+    <header className="bg-white/90 backdrop-blur-xl border-b border-gray-200/50 sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-         
-          {/* Seção esquerda - Badges compactos */}
-          <div className="flex items-center space-x-6">
-            <BadgeDisplay user={user} variant="compact" maxDisplay={3} />
+          
+          {/* Seção Esquerda: Badges do Usuário */}
+          <div className="flex-1">
+            <BadgeDisplay user={user} variant="compact" maxDisplay={4} />
           </div>
 
-          {/* Seção central - Stats do usuário */}
-          <div className="hidden md:flex items-center space-x-8">
-            {/* Pontos */}
-            <div className="text-center">
-              <div className="text-2xl font-bold bg-gradient-to-r from-hc-blue to-hc-teal bg-clip-text text-transparent">
-                {user.points || 0}
-              </div>
-              <div className="text-xs text-gray-500 font-medium">Pontos</div>
-            </div>
-
-            {/* Ranking com trend */}
-            <div className="text-center">
-              <div className="flex items-center justify-center space-x-1">
-                <span className="text-2xl font-bold text-gray-800">
-                  #{user.currentRank || "N/A"}
-                </span>
-                {getTrendIcon()}
-              </div>
-              <div className="text-xs text-gray-500 font-medium">Ranking</div>
-            </div>
-
-            {/* Módulos completados */}
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
-                {user.completedModules?.length || 0}
-              </div>
-              <div className="text-xs text-gray-500 font-medium">Módulos</div>
-            </div>
-          </div>
-
-          {/* Seção direita - Notificações e Settings */}
-          <div className="flex items-center space-x-4">
+          {/* Seção Direita: Ações e Notificações */}
+          <div className="flex items-center gap-4">
             
-            {/* Notificações */}
+            {/* Ícone de Notificações */}
             <div className="relative">
-              <button
+              <button 
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-3 text-gray-600 hover:text-hc-blue hover:bg-blue-50 rounded-xl transition-all duration-300"
+                className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors"
+                title="Notificações"
               >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-6 h-6" />
                 {unreadCount > 0 && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-xs text-white font-bold">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                  </div>
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow">
+                    {unreadCount}
+                  </span>
                 )}
               </button>
-
-              {/* Dropdown de notificações */}
-              {showNotifications && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
-                  <div className="p-4 border-b border-gray-100">
-                    <h3 className="font-semibold text-gray-800">Notificações</h3>
-                    {unreadCount > 0 && (
-                      <button
-                        onClick={() => markAsRead(user.uid)}
-                        className="text-sm text-hc-blue hover:text-hc-blue/80"
-                      >
-                        Marcar todas como lidas
-                      </button>
-                    )}
-                  </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {notifications.length > 0 ? (
-                      notifications.map((notification) => (
-                        <div
-                          key={notification.id}
-                          className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors ${
-                            !notification.read ? 'bg-blue-50/50' : ''
-                          }`}
-                        >
-                          <p className="font-medium text-sm text-gray-800">{notification.title}</p>
-                          <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
-                          <p className="text-xs text-gray-400 mt-2">
-                            {new Date(notification.createdAt).toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-8 text-center text-gray-500">
-                        <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Nenhuma notificação</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+              {/* Lógica do dropdown de notificações pode ser adicionada aqui */}
             </div>
 
-            {/* Settings - removido para simplificar */}
-            {/* Mantendo apenas logout na sidebar */}
-
-            {/* Info do usuário - compacta */}
-            <div className="flex items-center space-x-3 bg-gray-50 rounded-xl p-2">
-              <img
-                src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}&size=80&background=${INSTITUTOS_CONFIG[user.instituto]?.color.replace('bg-', '').replace('-500', '') || 'blue'}&color=ffffff`}
-                alt={user.displayName}
-                className="w-10 h-10 rounded-lg object-cover border-2 border-white shadow-sm"
-              />
-              <div className="hidden sm:block">
-                <p className="text-sm font-semibold text-gray-800 truncate max-w-32">
-                  {user.displayName}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {INSTITUTOS_CONFIG[user.instituto]?.name || user.instituto}
-                </p>
-              </div>
+            {/* Menu Dropdown do Usuário */}
+            <div className="relative">
+              <button onClick={() => setShowUserMenu(!showUserMenu)} className="flex items-center gap-2 rounded-full hover:ring-2 hover:ring-brand-azure hover:ring-offset-2 transition-all">
+                <img
+                  src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`}
+                  alt="Avatar do usuário"
+                  className="w-10 h-10 rounded-full border-2 border-white shadow-sm"
+                />
+              </button>
+              
+              {showUserMenu && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border z-50 overflow-hidden"
+                  onMouseLeave={() => setShowUserMenu(false)}
+                >
+                  <div className="px-4 py-3 border-b bg-gray-50">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{user.displayName}</p>
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  </div>
+                  <ul className="py-1">
+                    <li>
+                      <Link to="/profile" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <UserIcon className="w-4 h-4" /> Meu Perfil
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/settings" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <Settings className="w-4 h-4" /> Configurações
+                      </Link>
+                    </li>
+                    <li>
+                      <button 
+                        onClick={logout} 
+                        className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium"
+                      >
+                        <LogOut className="w-4 h-4" /> Sair
+                      </button>
+                    </li>
+                  </ul>
+                </motion.div>
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Clique fora para fechar notificações */}
-      {showNotifications && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => setShowNotifications(false)}
-        />
-      )}
     </header>
   );
 }
