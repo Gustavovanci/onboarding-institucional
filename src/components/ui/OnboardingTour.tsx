@@ -1,34 +1,25 @@
 // src/components/ui/OnboardingTour.tsx
 import 'intro.js/introjs.css';
 import { Steps } from 'intro.js-react';
-import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 
-// ATENÇÃO: A linha abaixo DEVE ser "export const", não "export default"
-export const OnboardingTour = () => {
-  const [enabled, setEnabled] = useState(true);
+interface OnboardingTourProps {
+  enabled: boolean;
+  onComplete: () => void;
+}
+
+export const OnboardingTour = ({ enabled, onComplete }: OnboardingTourProps) => {
   const { user, updateUserProfile } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
   const onExit = () => {
-    setEnabled(false);
     if (user && !user.tourSeen) {
       updateUserProfile({ tourSeen: true });
     }
+    onComplete();
     if (location.pathname !== '/dashboard') {
-      navigate('/dashboard');
-    }
-  };
-
-  const onBeforeChange = (nextStepIndex: number) => {
-    const steps = [ /* ... seu array de steps aqui ... */ ];
-    if (steps[nextStepIndex]?.element === '#tour-step-5-profile-page') {
-      if (location.pathname !== '/profile') {
-        navigate('/profile');
-      }
-    } else if (location.pathname !== '/dashboard') {
       navigate('/dashboard');
     }
   };
@@ -46,7 +37,7 @@ export const OnboardingTour = () => {
     },
     {
       element: '#tour-step-3-modules-grid',
-      intro: 'Sua jornada de conhecimento começa aqui! Estes são os módulos que você precisa completar. Clique em "Ver todos" para começar.',
+      intro: 'Sua jornada de conhecimento começa aqui! Estes são os módulos que você precisa completar.',
       position: 'top',
     },
     {
@@ -62,13 +53,27 @@ export const OnboardingTour = () => {
     },
   ];
 
-  useEffect(() => {
-    if (location.pathname !== '/dashboard') {
-      setEnabled(false);
-    } else if (!user?.tourSeen) {
-      setEnabled(true);
+  const onBeforeChange = (nextStepIndex: number) => {
+    const nextStep = steps[nextStepIndex];
+    if (!nextStep) return;
+
+    // Se o próximo passo é a página de perfil e não estamos lá, navega para lá.
+    if (nextStep.element === '#tour-step-5-profile-page') {
+      if (location.pathname !== '/profile') {
+        navigate('/profile');
+      }
     }
-  }, [location.pathname, user?.tourSeen]);
+    // Para todos os outros passos, garante que estamos no dashboard.
+    else if (location.pathname !== '/dashboard') {
+      navigate('/dashboard');
+    }
+  };
+
+  // Renderiza o componente Steps apenas se o tour estiver habilitado
+  // Isso garante que ele não tente rodar prematuramente
+  if (!enabled) {
+    return null;
+  }
 
   return (
     <Steps

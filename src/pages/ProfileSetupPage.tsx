@@ -1,20 +1,24 @@
 // src/pages/ProfileSetupPage.tsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // <-- 1. IMPORTAR O useNavigate
-import { useAuthStore, type UserProfile } from '../stores/authStore';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../stores/authStore';
+import { type UserProfile } from '../stores/authStore'; // Importando o tipo
 import { motion } from 'framer-motion';
 import { UserCheck, Briefcase, Building } from 'lucide-react';
+// --- CORREÇÃO 1: Importar as listas centralizadas ---
+import { INSTITUTOS_ARRAY, PROFESSIONS_ARRAY } from '../types';
 
-const institutes = ["ICHC", "INRAD", "INCOR", "IOT", "IMREA", "ICESP", "ICr", "IPq", "IPer", "PA", "LIMs"];
-const professions = ["Médico(a)", "Enfermeiro(a)", "Técnico(a) de Enfermagem", "Fisioterapeuta", "Nutricionista", "Psicólogo(a)", "Terapeuta Ocupacional", "Administrativo", "Voluntário(a)", "Técnico(a) em Nutrição"];
+// --- CORREÇÃO 2: Remover as listas antigas e desatualizadas ---
+// const institutes = ["ICHC", "INRAD", "INCOR", "IOT", "IMREA", "ICESP", "ICr", "IPq", "IPer", "PA", "LIMs"]; <-- REMOVIDO
+// const professions = ["Médico(a)", ...]; <-- REMOVIDO
 
 const ProfileSetupPage = () => {
-  const navigate = useNavigate(); // <-- 2. INICIALIZAR O HOOK
+  const navigate = useNavigate();
   const { user, updateUserProfile } = useAuthStore();
   const [institute, setInstitute] = useState('');
   const [profession, setProfession] = useState('');
   const [error, setError] = useState('');
-  const [isSaving, setIsSaving] = useState(false); // Adicionado para feedback no botão
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     if (!institute || !profession) {
@@ -26,19 +30,24 @@ const ProfileSetupPage = () => {
     setError('');
 
     const profileData: Partial<UserProfile> = {
-      institute,
+      instituto: institute, // <-- Corrigido para 'instituto'
       profession,
       profileCompleted: true,
     };
 
     try {
       await updateUserProfile(profileData);
-      navigate('/dashboard'); // <-- 3. NAVEGAR PARA A DASHBOARD APÓS SALVAR
+      navigate('/dashboard');
     } catch (e) {
+      console.error("Erro ao salvar perfil:", e); // Adicionado log de erro
       setError('Ocorreu um erro ao salvar seu perfil. Tente novamente.');
+    } finally {
       setIsSaving(false);
     }
   };
+
+  // Filtramos "Outros" da lista de seleção inicial
+  const selectableInstitutes = INSTITUTOS_ARRAY.filter(i => i !== 'Outros');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 flex items-center justify-center p-4">
@@ -63,7 +72,8 @@ const ProfileSetupPage = () => {
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-0 transition"
               >
                 <option value="" disabled>Selecione...</option>
-                {institutes.map(i => <option key={i} value={i}>{i}</option>)}
+                {/* --- CORREÇÃO 3: Usar a lista importada e correta --- */}
+                {selectableInstitutes.map(i => <option key={i} value={i}>{i}</option>)}
               </select>
             </div>
 
@@ -75,7 +85,8 @@ const ProfileSetupPage = () => {
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-0 transition"
               >
                 <option value="" disabled>Selecione...</option>
-                {professions.map(p => <option key={p} value={p}>{p}</option>)}
+                 {/* --- MELHORIA: Usar a lista centralizada de profissões também --- */}
+                {PROFESSIONS_ARRAY.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
           </div>

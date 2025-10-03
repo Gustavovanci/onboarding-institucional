@@ -1,8 +1,14 @@
+// src/pages/LoginPage.tsx
 import { LogIn, Shield, Sparkles } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
 const LoginPage = () => {
   const { loginWithGoogle, isLoading } = useAuthStore();
+
+  const handleLogin = () => {
+    // Apenas chama a função, o redirecionamento fará o resto
+    loginWithGoogle();
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -31,7 +37,7 @@ const LoginPage = () => {
               </p>
             </div>
             <button
-              onClick={loginWithGoogle}
+              onClick={handleLogin} // Chama a nova função
               disabled={isLoading}
               className="group relative w-full overflow-hidden bg-white hover:bg-gray-50 text-blue-600 font-bold rounded-2xl text-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 p-6 flex items-center justify-center space-x-3 border-2 border-white/20 disabled:opacity-70"
             >

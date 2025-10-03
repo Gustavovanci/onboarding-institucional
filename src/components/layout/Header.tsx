@@ -1,10 +1,11 @@
+// src/components/layout/Header.tsx
 import { LogOut, Bell, Settings, User as UserIcon } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import useNotificationStore from '../../stores/notificationStore';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import BadgeDisplay from '../badges/BadgeDisplay'; // Agora este arquivo existe
+import BadgeDisplay from '../badges/BadgeDisplay';
 
 export default function Header() {
   const { user, logout } = useAuthStore();
@@ -18,7 +19,6 @@ export default function Header() {
     }
   }, [user, fetchNotifications]);
 
-  // Se não houver usuário, não renderiza nada no header.
   if (!user) return null;
 
   return (
@@ -26,15 +26,13 @@ export default function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
-          {/* Seção Esquerda: Badges do Usuário */}
           <div className="flex-1">
             <BadgeDisplay user={user} variant="compact" maxDisplay={4} />
           </div>
 
-          {/* Seção Direita: Ações e Notificações */}
-          <div className="flex items-center gap-4">
+          {/* CORREÇÃO: Adicionado ID para o passo do tour */}
+          <div id="tour-step-4-header-actions" className="flex items-center gap-4">
             
-            {/* Ícone de Notificações */}
             <div className="relative">
               <button 
                 onClick={() => setShowNotifications(!showNotifications)}
@@ -48,10 +46,8 @@ export default function Header() {
                   </span>
                 )}
               </button>
-              {/* Lógica do dropdown de notificações pode ser adicionada aqui */}
             </div>
 
-            {/* Menu Dropdown do Usuário */}
             <div className="relative">
               <button onClick={() => setShowUserMenu(!showUserMenu)} className="flex items-center gap-2 rounded-full hover:ring-2 hover:ring-brand-azure hover:ring-offset-2 transition-all">
                 <img

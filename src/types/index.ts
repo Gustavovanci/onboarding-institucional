@@ -1,11 +1,12 @@
+// src/types/index.ts
+
 // DEFINIÇÃO DO TIPO
 export type Instituto =
   | "ICHC" | "InCor" | "IOT" | "IPQ" | "InRad" | "ICr"
   | "ICESP" | "IMREA" | "LIMs" | "IPer" | "IGS"
-  // CORREÇÃO CRÍTICA: "Outros" foi adicionado de volta. É ESSENCIAL para que
+  // CORREÇÃO CRÍTICA: "Outros" foi adicionado. É ESSENCIAL para que
   // o cadastro de novos usuários funcione, pois o sistema atribui "Outros"
   // como valor padrão antes do usuário escolher seu instituto real.
-  // Sem isso, o objeto de usuário é criado com erro, quebrando todo o resto.
   | "Outros";
 
 export type Role = "employee" | "coordinator" | "admin";
@@ -29,15 +30,17 @@ export interface User {
   points: number;
   badges: string[];
   completedModules: string[];
+  quizAttempts: any[]; // Adicionado para consistência com o defaultUserStructure
   certificates: string[];
   createdAt: number;
-  lastAccess: number;
+  lastAccess: number | any; // Any para aceitar o serverTimestamp do Firebase
   profileCompleted: boolean;
   onboardingCompleted: boolean;
   currentRank: number;
   previousRank?: number;
   instituteRank: number;
   welcomeModalSeen: boolean;
+  tourSeen: boolean; // Adicionado para consistência com o defaultUserStructure
   personalizations: UserPersonalizations;
 }
 
@@ -47,7 +50,10 @@ export interface Module {
   description: string;
   order: number;
   points: number;
-  content: Array<{ id: string; title: string; content: string; type: 'text' | 'video' }>;
+  category: string;
+  estimatedMinutes: number;
+  imageUrl?: string;
+  content: Array<{ id: string; title: string; content: string; type: 'text' | 'video' | 'quiz' | 'link' }>;
 }
 
 export interface Certificate {
@@ -97,17 +103,16 @@ export const PROFESSIONS_ARRAY: string[] = [
 ];
 
 export const INSTITUTOS_CONFIG: Record<Instituto, InstitutoConfig> = {
-  "ICHC": { name: "ICHC", fullName: "Instituto Central", logo: "..\hc\ICHC.png", color: "bg-blue-500" },
-  "InCor": { name: "InCor", fullName: "Instituto do Coração", logo: "/logos/incor.png", color: "bg-red-500" },
-  "IOT": { name: "IOT", fullName: "Inst. de Ortopedia e Traumatologia", logo: "/logos/iot.png", color: "bg-green-500" },
-  "IPQ": { name: "IPQ", fullName: "Instituto de Psiquiatria", logo: "/logos/ipq.png", color: "bg-purple-500" },
-  "InRad": { name: "InRad", fullName: "Instituto de Radiologia", logo: "/logos/inrad.png", color: "bg-yellow-500" },
-  "ICr": { name: "ICr", fullName: "Inst. da Criança e do Adolescente", logo: "/logos/icr.png", color: "bg-pink-500" },
-  "ICESP": { name: "ICESP", fullName: "Instituto do Câncer de SP", logo: "/logos/icesp.png", color: "bg-indigo-500" },
-  "IMREA": { name: "IMREA", fullName: "Inst. de Medicina Física e Reabilitação", logo: "/logos/imrea.png", color: "bg-teal-500" },
-  "LIMs": { name: "LIMs", fullName: "Labs. de Investigação Médica", logo: "/logos/lims.png", color: "bg-gray-500" },
-  "IPer": { name: "IPer", fullName: "Instituto Perdizes", logo: "/logos/iper.png", color: "bg-orange-500" },
-  "IGS": { name: "IGS", fullName: "Instituto de Gestão e Saúde", logo: "/logos/pa.png", color: "bg-cyan-500" },
-  // "Outros" adicionado para corresponder ao tipo e garantir consistência
-  "Outros": { name: "Outros", fullName: "Outro Instituto", logo: "/logos/default.png", color: "bg-slate-500" },
+  "ICHC": { name: "ICHC", fullName: "Instituto Central", logo: "/hc/ICHC.png", color: "bg-blue-500" },
+  "InCor": { name: "InCor", fullName: "Instituto do Coração", logo: "/hc/InCor.png", color: "bg-red-500" },
+  "IOT": { name: "IOT", fullName: "Inst. de Ortopedia e Traumatologia", logo: "/hc/IOT.png", color: "bg-green-500" },
+  "IPQ": { name: "IPQ", fullName: "Instituto de Psiquiatria", logo: "/hc/IPQ.png", color: "bg-purple-500" },
+  "InRad": { name: "InRad", fullName: "Instituto de Radiologia", logo: "/hc/InRad.png", color: "bg-yellow-500" },
+  "ICr": { name: "ICr", fullName: "Inst. da Criança e do Adolescente", logo: "/hc/ICr.png", color: "bg-pink-500" },
+  "ICESP": { name: "ICESP", fullName: "Instituto do Câncer de SP", logo: "/hc/ICESP.png", color: "bg-indigo-500" },
+  "IMREA": { name: "IMREA", fullName: "Inst. de Medicina Física e Reabilitação", logo: "/hc/IMREA.png", color: "bg-teal-500" },
+  "LIMs": { name: "LIMs", fullName: "Labs. de Investigação Médica", logo: "/hc/LIMs.png", color: "bg-gray-500" },
+  "IPer": { name: "IPer", fullName: "Instituto Perdizes", logo: "/hc/IPer.png", color: "bg-orange-500" },
+  "IGS": { name: "IGS", fullName: "Instituto de Gestão e Saúde", logo: "/hc/IGS.png", color: "bg-cyan-500" },
+  "Outros": { name: "Outros", fullName: "Outro Instituto", logo: "/hc/ICHC.png", color: "bg-slate-500" },
 };
