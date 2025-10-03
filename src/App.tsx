@@ -1,3 +1,4 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuthStore } from "./stores/authStore";
@@ -13,22 +14,28 @@ import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProfileSetupPage from "./pages/ProfileSetupPage";
 import RankingPage from "./pages/RankingPage";
-import ModulePage from "./pages/ModulePage";
 import ContentPage from "./pages/ContentPage";
+import ModulePage from "./pages/ModulePage";
+import ModulesGridPage from "./pages/ModulesGridPage"; // <-- VAMOS ATIVAR ESTA
+
+// --- Páginas que AINDA VAMOS CRIAR (permanecem comentadas) ---
+// import QuizPage from "./pages/QuizPage";
+// import OnboardingCompletionPage from "./pages/OnboardingCompletionPage";
+// import MessagesPage from "./pages/MessagesPage";
 
 function App() {
   const { isLoading, isAuthenticated, initializeAuthListener } = useAuthStore();
 
   useEffect(() => {
     const unsubscribe = initializeAuthListener();
-    return unsubscribe;
-  }, []);
+    return () => unsubscribe();
+  }, [initializeAuthListener]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <LoadingSpinner size="lg" />
+          <LoadingSpinner />
           <p className="mt-4 text-gray-600">Carregando Onboarding HC...</p>
         </div>
       </div>
@@ -38,37 +45,32 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Rotas Públicas */}
+        {/* === ROTAS PÚBLICAS === */}
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
         <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
 
-        {/* Rota para o Setup do Perfil */}
-        <Route
-          path="/profile-setup"
-          element={
-            <ProtectedRoute>
-              <ProfileSetupPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* === ROTAS DE FLUXO INICIAL === */}
+        <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetupPage /></ProtectedRoute>} />
+        
+        {/* As rotas abaixo serão descomentadas nas próximas partes */}
+        {/* <Route path="/completion" element={<ProtectedRoute><OnboardingCompletionPage /></ProtectedRoute>} /> */}
+        {/* <Route path="/modules/:moduleId/quiz" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} /> */}
 
-        {/* Rotas Protegidas que exigem que o perfil esteja completo */}
+        {/* === ROTAS PRINCIPAIS DA APLICAÇÃO === */}
         <Route element={<ProtectedRoute><ProfileCheck /></ProtectedRoute>}>
           <Route path="/dashboard" element={<Layout><DashboardPage /></Layout>} />
           <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
           <Route path="/ranking" element={<Layout><RankingPage /></Layout>} />
           <Route path="/modules/:moduleId" element={<Layout><ModulePage /></Layout>} />
+          <Route path="/content/:pageId" element={<Layout><ContentPage /></Layout>} />
           
-          {/* Páginas de Conteúdo Estático */}
-          <Route path="/institucional" element={<Layout><ContentPage pageId="institucional" /></Layout>} />
-          <Route path="/identificacao" element={<Layout><ContentPage pageId="identificacao" /></Layout>} />
-          <Route path="/sistemas" element={<Layout><ContentPage pageId="sistemas" /></Layout>} />
-          <Route path="/voluntariado" element={<Layout><ContentPage pageId="voluntariado" /></Layout>} />
-          <Route path="/comunicacao" element={<Layout><ContentPage pageId="comunicacao" /></Layout>} />
-          <Route path="/relacionamentos" element={<Layout><ContentPage pageId="relacionamentos" /></Layout>} />
+          {/* ROTA ATIVADA ABAIXO */}
+          <Route path="/modules" element={<Layout><ModulesGridPage /></Layout>} />
+
+          {/* <Route path="/messages" element={<Layout><MessagesPage /></Layout>} /> */}
         </Route>
 
-        {/* Página 404 */}
+        {/* === ROTA 404 === */}
         <Route
           path="*"
           element={
@@ -87,4 +89,3 @@ function App() {
 }
 
 export default App;
-

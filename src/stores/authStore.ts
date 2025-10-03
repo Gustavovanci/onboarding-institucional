@@ -1,5 +1,6 @@
+// src/stores/authStore.ts
 import { create } from 'zustand';
-import { type User, type UserPersonalizations } from '../types';
+import { type User, type UserPersonalizations, type Instituto, INSTITUTOS_ARRAY } from '../types';
 import { auth, googleProvider, db } from '../utils/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
@@ -11,15 +12,35 @@ interface AuthState {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (data: Partial<User>) => Promise<void>;
-  fetchAndUpdateUser: (uid: string) => Promise<void>;
   initializeAuthListener: () => () => void;
 }
 
 const defaultPersonalizations: UserPersonalizations = {
-  colorTheme: 'hc-classic',
+  colorTheme: 'classic',
   statusEmoji: 'happy',
   customTitle: 'explorer',
   favoriteQuote: '',
+};
+
+// ESTRUTURA PADRÃO DE UM USUÁRIO PARA GARANTIR QUE TODOS OS CAMPOS EXISTAM
+const defaultUserStructure: Omit<User, 'uid' | 'email' | 'displayName' | 'photoURL' | 'createdAt'> = {
+  instituto: INSTITUTOS_ARRAY[0],
+  role: "employee",
+  profession: '',
+  bio: 'Bem-vindo(a) à jornada de Onboarding do HC!',
+  points: 0,
+  badges: [],
+  completedModules: [],
+  quizAttempts: [],
+  certificates: [],
+  lastAccess: 0,
+  profileCompleted: false,
+  onboardingCompleted: false,
+  currentRank: 0,
+  instituteRank: 0,
+  welcomeModalSeen: false,
+  tourSeen: false,
+  personalizations: defaultPersonalizations,
 };
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -39,7 +60,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: async () => {
     await signOut(auth);
-    set({ user: null, isAuthenticated: false, isLoading: false });
+    set({ user: null, isAuthenticated: false });
   },
 
   updateUserProfile: async (data: Partial<User>) => {
@@ -56,47 +77,46 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }));
   },
 
-  fetchAndUpdateUser: async (uid: string) => {
-    const userRef = doc(db, "users", uid);
-    const snap = await getDoc(userRef);
-    if (snap.exists()) {
-      const freshUserData = snap.data() as User;
-      set({ user: freshUserData });
-    }
-  },
-
   initializeAuthListener: () => {
-    return onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const userRef = doc(db, "users", firebaseUser.uid);
         const snap = await getDoc(userRef);
 
         if (snap.exists()) {
-          const userData = snap.data() as User;
-          set({ user: userData, isAuthenticated: true, isLoading: false });
+          // --- ESTA É A NOVA LÓGICA ROBUSTA ---
+          // 1. Pega os dados que existem no banco
+          const existingData = snap.data();
+
+          // 2. Mescla com a estrutura padrão para garantir que campos novos (como personalizations) existam
+          const safeUserData: User = {
+            ...defaultUserStructure, // Garante todos os campos
+            ...existingData,        // Sobrescreve com os dados salvos
+            uid: firebaseUser.uid,  // Garante os dados do provedor
+            email: firebaseUser.email!,
+            displayName: firebaseUser.displayName || existingData.displayName,
+            photoURL: firebaseUser.photoURL,
+          };
+          
+          // 3. Atualiza o banco com a foto mais recente e o último acesso
+          await updateDoc(userRef, {
+            displayName: safeUserData.displayName,
+            photoURL: safeUserData.photoURL,
+            lastAccess: serverTimestamp(),
+          });
+          
+          // 4. Define o estado local com o objeto completo e seguro
+          set({ user: safeUserData, isAuthenticated: true, isLoading: false });
+
         } else {
-          // CORREÇÃO: Garantindo que o photoURL seja sempre pego do provedor do Google
+          // Usuário não existe (primeiro login), cria com a estrutura completa
           const newUser: User = {
             uid: firebaseUser.uid,
             email: firebaseUser.email!,
             displayName: firebaseUser.displayName || "Novo Colaborador",
-            photoURL: firebaseUser.photoURL, // Esta linha é a mais importante
-            instituto: "Outros",
-            role: "employee",
-            profession: '',
-            bio: '',
-            points: 10,
-            badges: [],
-            completedModules: [],
-            certificates: [],
+            photoURL: firebaseUser.photoURL,
             createdAt: Date.now(),
-            lastAccess: Date.now(),
-            profileCompleted: false,
-            onboardingCompleted: false,
-            currentRank: 0,
-            instituteRank: 0,
-            welcomeModalSeen: false,
-            personalizations: defaultPersonalizations,
+            ...defaultUserStructure, // Aplica toda a estrutura padrão
           };
           await setDoc(userRef, newUser);
           set({ user: newUser, isAuthenticated: true, isLoading: false });
@@ -105,5 +125,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ user: null, isAuthenticated: false, isLoading: false });
       }
     });
+    return unsubscribe;
   },
 }));
