@@ -35,3 +35,5 @@ vital-novo-2-firebase-adminsdk-*.json
 
 # TypeScript build info
 *.tsbuildinfo
+
+.vercel
