@@ -1,8 +1,10 @@
+// src/pages/CertificatesPage.tsx
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom"; // Importe o Link
 import { useAuthStore } from "../stores/authStore";
 import { db } from "../utils/firebase";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
-import { CertificateTemplate, useCertificateGenerator } from "../components/certificates/CertificateGenerator";
+import { useCertificateGenerator } from "../components/certificates/CertificateGenerator"; // A importação agora deve funcionar
 import { type Certificate, type Module, type User } from "../types";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import { Award, Download } from "lucide-react";
@@ -37,7 +39,6 @@ export default function CertificatesPage() {
           querySnapshot.docs.map(async (certDoc) => {
             const certData = { ...certDoc.data(), id: certDoc.id } as Certificate;
             
-            // Buscar dados do módulo
             const moduleRef = doc(db, "modules", certData.moduleId);
             const moduleSnap = await getDoc(moduleRef);
             const moduleData = moduleSnap.exists() ? { ...moduleSnap.data(), id: moduleSnap.id } as Module : null;
@@ -51,9 +52,9 @@ export default function CertificatesPage() {
             }
             return null;
           })
-        ).then(results => results.filter(Boolean) as CertificateWithDetails[]); // Remove nulos
+        ).then(results => results.filter(Boolean) as CertificateWithDetails[]);
 
-        setCertificates(fetchedData);
+        setCertificates(fetchedData.sort((a, b) => b.certificate.completionDate - a.certificate.completionDate));
       } catch (error) {
         console.error("Erro ao buscar certificados: ", error);
       } finally {
