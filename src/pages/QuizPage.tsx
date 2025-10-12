@@ -13,7 +13,6 @@ interface QuizItem { id: string; order: number; question: string; options: strin
 interface ModuleData { title: string; points: number; isRequired: boolean; }
 type AnswerStatus = 'unanswered' | 'correct' | 'incorrect';
 
-// A palavra-chave 'default' aqui é crucial para a correção do erro
 export default function QuizPage() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const navigate = useNavigate();
@@ -120,11 +119,11 @@ export default function QuizPage() {
   const selectedAnswer = answers[currentQuestionIndex];
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50" style={{backgroundImage: "url('/fundo_backdropv2.png')", backgroundSize: 'cover', backgroundPosition: 'center'}}>
         <div className="max-w-2xl mx-auto w-full">
-            <div className="bg-white p-8 rounded-2xl shadow-xl border">
-                <p className="text-sm font-semibold text-blue-600">Questão {currentQuestionIndex + 1} de {questions.length}</p>
-                <h2 className="text-2xl font-bold mt-2">{question.question}</h2>
+            <div className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border">
+                <p className="text-sm font-semibold text-brand-azure">Questão {currentQuestionIndex + 1} de {questions.length}</p>
+                <h2 className="text-2xl font-bold mt-2 text-brand-dark">{question.question}</h2>
                 <div className="mt-6 space-y-3">
                 {question.options.map((option, index) => {
                     let status: AnswerStatus = 'unanswered';
@@ -135,9 +134,9 @@ export default function QuizPage() {
 
                     const baseClasses = "w-full text-left p-4 border-2 rounded-lg transition-all flex items-center justify-between disabled:cursor-default";
                     const statusClasses = {
-                        unanswered: 'border-gray-300 hover:border-blue-500 hover:bg-blue-50',
-                        correct: 'bg-green-100 border-green-500 text-green-800 font-semibold',
-                        incorrect: 'bg-red-100 border-red-500 text-red-800 font-semibold',
+                        unanswered: 'border-gray-300 hover:border-brand-azure hover:bg-blue-50',
+                        correct: 'bg-green-100 border-brand-green1 text-brand-green1 font-semibold',
+                        incorrect: 'bg-red-100 border-brand-red text-brand-red font-semibold',
                     };
 
                     return (
@@ -166,4 +165,3 @@ export default function QuizPage() {
     </div>
   );
 };
-

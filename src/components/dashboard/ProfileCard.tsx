@@ -44,7 +44,7 @@ export default function ProfileCard({
               alt={user.displayName}
               className="w-32 h-32 rounded-2xl border-4 border-white shadow-lg object-cover"
             />
-            <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-white rounded-xl flex items-center justify-center text-3xl border-4 border-white shadow-md">
+            <div className="absolute -bottom-2 -right-2 w-12 h-12 flex items-center justify-center text-3xl">
               {emoji.emoji}
             </div>
           </div>

@@ -5,11 +5,13 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          azure: "#2b97d4",      // azul
-          red: "#e74121",        // vermelho vívido
-          teal: "#238264",       // turquesa
-          tealDark: "#196653",   // turquesa escuro
-          tealDarker: "#124e48", // turquesa mais escuro
+          red: "#E74121",
+          azure: "#2B97D4",
+          green1: "#20856B",
+          green2: "#136D5E",
+          green3: "#0D4E48",
+          green4: "#237450",
+          green5: "#1E5A3E",
           light: "#F0F4F8",
           dark: "#0D1B2A",
         },
