@@ -46,10 +46,10 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
     <div className="flex flex-col w-64 h-full bg-white/95 backdrop-blur-xl border-r border-gray-200/50">
       <div className="flex items-center justify-center h-20 px-4 border-b border-gray-200/50">
         <div className="flex items-center space-x-3">
-          <img 
-            src={institutConfig?.logo || "/hc/ICHC.png"} 
-            alt={institutConfig?.fullName || "Logo HC"} 
-            className="w-10 h-10 object-contain" 
+          <img
+            src={institutConfig?.logo || "/hc/ICHC.png"}
+            alt={institutConfig?.fullName || "Logo HC"}
+            className="w-10 h-10 object-contain"
           />
           <div>
             <span className="text-lg font-bold text-gray-900">Onboarding HC</span>
@@ -67,7 +67,7 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
             </div>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className="h-2 rounded-full bg-gradient-to-r from-brand-azure to-brand-teal" style={{ width: `${progressToNextLevel}%` }} />
+            <div className="h-2 rounded-full bg-gradient-to-r from-brand-azure to-brand-green1" style={{ width: `${progressToNextLevel}%` }} />
           </div>
           <div className="flex items-center space-x-2 text-gray-600 mt-3">
             <Clock className="w-4 h-4" />
@@ -120,11 +120,11 @@ export default function Sidebar() {
       <AnimatePresence>
         {isOpen && (
           <div className="lg:hidden fixed inset-0 z-[60]">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)} 
+              onClick={() => setIsOpen(false)}
               className="absolute inset-0 bg-black/50"
             />
             <motion.div
