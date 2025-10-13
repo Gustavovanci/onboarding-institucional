@@ -30,11 +30,12 @@ const RankingPage = () => {
         <p className="mt-2 text-lg text-gray-600">Veja sua posição e a dos seus colegas na jornada de integração.</p>
       </div>
 
+      {/* Ponto 6: Filtro de Ranking */}
       <div className="flex justify-center">
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as Instituto | 'Geral')}
-          className="px-4 py-2 border rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
+          className="px-4 py-2 border rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-brand-azure"
         >
           <option value="Geral">Ranking Geral</option>
           {INSTITUTOS_ARRAY.filter(i => i !== 'Outros').map((instituto) => (
@@ -63,7 +64,7 @@ const RankingPage = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.03 }}
-                  className={`transition-colors ${player.uid === user?.uid ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'}`}
+                  className={`transition-colors ${player.uid === user?.uid ? 'bg-blue-50 border-l-4 border-brand-azure' : 'hover:bg-gray-50'}`}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-center w-8 h-8">
@@ -73,7 +74,7 @@ const RankingPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-4">
                       <img
-                        crossOrigin="anonymous"
+                        crossOrigin="anonymous" // <-- CORREÇÃO APLICADA
                         src={player.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.displayName)}&background=random`}
                         alt={player.displayName || ''}
                         className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
@@ -87,7 +88,7 @@ const RankingPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {INSTITUTOS_CONFIG[player.instituto]?.name || player.instituto}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-lg text-blue-600">{player.points}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-lg text-brand-azure">{player.points}</td>
                 </motion.tr>
               ))}
             </tbody>

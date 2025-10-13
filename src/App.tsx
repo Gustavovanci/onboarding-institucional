@@ -23,27 +23,33 @@ import BenefitsPage from "@/pages/BenefitsPage";
 import CommunicationPage from "@/pages/CommunicationPage";
 import InnovationPage from "@/pages/InnovationPage";
 import MessagesPage from "@/pages/MessagesPage";
-import HistoryPage from "@/pages/HistoryPage"; // <-- Importa a nova página
+import HistoryPage from "@/pages/HistoryPage";
 
 function App() {
   const { isLoading: isAuthLoading, isAuthenticated, initializeAuthListener } = useAuthStore();
-  const { fetchModules, hasFetched } = useModulesStore();
+  const { fetchModules, hasFetched, isLoading: isModulesLoading } = useModulesStore();
 
+  // Inicializa o listener de autenticação uma única vez
   useEffect(() => {
     const unsubscribe = initializeAuthListener();
     return () => unsubscribe();
   }, [initializeAuthListener]);
 
+  // Busca os módulos assim que o usuário é autenticado
   useEffect(() => {
     if (isAuthenticated && !hasFetched) {
       fetchModules();
     }
   }, [isAuthenticated, hasFetched, fetchModules]);
 
-  if (isAuthLoading) {
+  // Condição de Carregamento Robusta
+  if (isAuthLoading || (isAuthenticated && !hasFetched && isModulesLoading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center"><LoadingSpinner /><p className="mt-4 text-gray-600">Carregando...</p></div>
+      <div className="min-h-screen flex items-center justify-center bg-brand-light">
+        <div className="text-center space-y-4">
+          <LoadingSpinner />
+          <p className="text-gray-600 animate-pulse">Carregando plataforma...</p>
+        </div>
       </div>
     );
   }
@@ -52,16 +58,17 @@ function App() {
     <Router>
       <AppErrorBoundary>
         <Routes>
-          {/* Rota principal agora é a LoginPage */}
+          {/* Rota de Login/Home */}
           <Route path="/" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
           <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
           
+          {/* Rota de Setup de Perfil */}
           <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetupPage /></ProtectedRoute>} />
           
+          {/* Rotas Protegidas que requerem perfil completo */}
           <Route element={<ProtectedRoute><ProfileCheck /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Layout><DashboardPage /></Layout>} />
             <Route path="/modules" element={<Layout><ModulesGridPage /></Layout>} />
-            {/* Rota para o novo módulo de história */}
             <Route path="/modules/nossa-historia" element={<Layout><HistoryPage /></Layout>} />
             <Route path="/modules/:moduleId" element={<Layout><ModulePage /></Layout>} />
             <Route path="/modules/:moduleId/quiz" element={<QuizPage />} />
@@ -74,11 +81,13 @@ function App() {
             <Route path="/innovation" element={<Layout><InnovationPage /></Layout>} />
           </Route>
 
+          {/* Rota para Página Não Encontrada */}
           <Route path="*" element={
             <div className="min-h-screen flex items-center justify-center text-center p-4">
               <div>
                 <h1 className="text-4xl font-bold">404 - Página não encontrada</h1>
-                <Link to="/" className="text-blue-600 hover:underline mt-4 inline-block">Voltar ao início</Link>
+                <p className="text-gray-500 mt-2">O endereço que você tentou acessar não existe.</p>
+                <Link to="/" className="btn-primary mt-6">Voltar ao Início</Link>
               </div>
             </div>
           } />

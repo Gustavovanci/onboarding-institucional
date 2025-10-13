@@ -1,53 +1,42 @@
 // src/pages/DashboardPage.tsx
 import { useEffect, useState } from "react";
-import { useAuthStore } from "../stores/authStore";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Award, TrendingUp } from "lucide-react";
 
+import { useAuthStore } from "../stores/authStore";
+import { useModulesStore } from "../stores/modulesStore";
 import WelcomeModal from "../components/ui/WelcomeModal";
-import { StaticOnboardingTour } from '../components/ui/StaticOnboardingTour'; // Usaremos a versão estática
+import { StaticOnboardingTour } from '../components/ui/StaticOnboardingTour';
 import { DeadlineCard } from "../components/dashboard/DeadlineCard";
 import { InstituteRankingCard } from "../components/dashboard/InstituteRankingCard";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import ProfileCard from "../components/dashboard/ProfileCard";
 import { WelcomeHeader } from "../components/dashboard/WelcomeHeader";
-
 import { INSTITUTOS_CONFIG } from "../types";
-import { collection, getDocs, query } from "firebase/firestore";
-import { db } from "../utils/firebase";
 
-// Array de imagens para o tour (adicione os caminhos corretos)
+// Ponto 11: Defina aqui os caminhos para as imagens do tour que você criará
+// Coloque as imagens na pasta /public/tour/
 const tourImages = [
-  '/tour/passo1.png',
-  '/tour/passo2.png',
-  '/tour/passo3.png',
-  '/tour/passo4.png',
-  '/tour/passo5.png',
+  '/tour/passo1.png', // Ex: Mostra o menu lateral e explica suas funções
+  '/tour/passo2.png', // Ex: Destaca o card de perfil e os status (pontos, ranking)
+  '/tour/passo3.png', // Ex: Aponta para os cards de Prazo, Conquistas e Ranking
+  '/tour/passo4.png', // Ex: Mostra as notificações e o menu do usuário no header
+  '/tour/passo5.png', // Ex: Tela final, incentivando o usuário a começar pelos módulos
 ];
 
 export default function DashboardPage() {
   const { user, updateUserProfile } = useAuthStore();
-  const [totalModules, setTotalModules] = useState(0);
+  const { modules } = useModulesStore();
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [startTour, setStartTour] = useState(false);
 
   useEffect(() => {
     if (user && !user.welcomeModalSeen) {
-      // Pequeno delay para garantir que a UI carregou antes de mostrar o modal
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setShowWelcomeModal(true);
       }, 500);
-    }
-    
-    const fetchModulesCount = async () => {
-      const q = query(collection(db, "modules"));
-      const querySnapshot = await getDocs(q);
-      setTotalModules(querySnapshot.size);
-    };
-
-    if (user) {
-      fetchModulesCount();
+      return () => clearTimeout(timer);
     }
   }, [user]);
 
@@ -71,10 +60,10 @@ export default function DashboardPage() {
   if (!user) {
     return <div className="flex justify-center items-center h-screen"><LoadingSpinner /></div>;
   }
-
-  const institutConfig = user.instituto ? INSTITUTOS_CONFIG[user.instituto] : null;
-  const completedModulesCount = user.completedModules?.length || 0;
-
+  
+  const requiredModules = modules.filter(m => m.isRequired);
+  const completedRequiredModules = user.completedModules.filter(id => requiredModules.some(m => m.id === id));
+  
   return (
     <>
       <AnimatePresence>
@@ -98,9 +87,8 @@ export default function DashboardPage() {
         <div id="tour-step-2-main-profile-card">
           <ProfileCard
             user={user}
-            institutConfig={institutConfig}
-            completedModulesCount={completedModulesCount}
-            totalModules={totalModules}
+            completedModulesCount={completedRequiredModules.length}
+            totalModules={requiredModules.length}
           />
         </div>
 
@@ -122,7 +110,7 @@ export default function DashboardPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Pontos Totais</span><span className="font-bold text-green-700">{user.points || 0} pts</span></div>
               <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Badges Ganhos</span><span className="font-bold text-green-700">{user.badges?.length || 0}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Módulos Concluídos</span><span className="font-bold text-green-700">{completedModulesCount}</span></div>
+              <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Módulos Concluídos</span><span className="font-bold text-green-700">{completedRequiredModules.length} de {requiredModules.length}</span></div>
             </div>
           </motion.div>
           
