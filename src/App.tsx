@@ -1,5 +1,5 @@
 // src/App.tsx
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useModulesStore } from "@/stores/modulesStore";
@@ -17,6 +17,7 @@ import ModulePage from "@/pages/ModulePage";
 import ModulesGridPage from "@/pages/ModulesGridPage";
 import RankingPage from "@/pages/RankingPage";
 import ProfilePage from "@/pages/ProfilePage";
+import SettingsPage from "@/pages/SettingsPage"; // Importado
 import QuizPage from "@/pages/QuizPage";
 import CertificatesPage from "@/pages/CertificatesPage";
 import BenefitsPage from "@/pages/BenefitsPage";
@@ -24,6 +25,7 @@ import CommunicationPage from "@/pages/CommunicationPage";
 import InnovationPage from "@/pages/InnovationPage";
 import MessagesPage from "@/pages/MessagesPage";
 import HistoryPage from "@/pages/HistoryPage";
+import ContentPage from "@/pages/ContentPage"; // Importado para páginas genéricas
 
 function App() {
   const { isLoading: isAuthLoading, isAuthenticated, initializeAuthListener } = useAuthStore();
@@ -44,7 +46,7 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-brand-light">
         <div className="text-center space-y-4">
-          <LoadingSpinner size="lg" />
+          <LoadingSpinner />
           <p className="text-gray-600 animate-pulse">Carregando plataforma...</p>
         </div>
       </div>
@@ -68,13 +70,13 @@ function App() {
             <Route path="/modules/:moduleId/quiz" element={<QuizPage />} />
             <Route path="/ranking" element={<Layout><RankingPage /></Layout>} />
             <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
-            {/* CORREÇÃO: Adicionada rota de redirecionamento para /settings */}
-            <Route path="/settings" element={<Navigate to="/profile" />} />
+            <Route path="/settings" element={<Layout><SettingsPage /></Layout>} />
             <Route path="/certificates" element={<Layout><CertificatesPage /></Layout>} />
             <Route path="/messages" element={<Layout><MessagesPage /></Layout>} />
             <Route path="/benefits" element={<Layout><BenefitsPage /></Layout>} />
             <Route path="/communication" element={<Layout><CommunicationPage /></Layout>} />
             <Route path="/innovation" element={<Layout><InnovationPage /></Layout>} />
+            <Route path="/quem-somos" element={<Layout><ContentPage pageId="quem-somos" /></Layout>} />
           </Route>
 
           <Route path="*" element={
@@ -82,7 +84,7 @@ function App() {
               <div>
                 <h1 className="text-4xl font-bold">404 - Página não encontrada</h1>
                 <p className="text-gray-500 mt-2">O endereço que você tentou acessar não existe.</p>
-                <Link to="/" className="btn-primary mt-6">Voltar ao Início</Link>
+                <a href="/" className="btn-primary mt-6">Voltar ao Início</a>
               </div>
             </div>
           } />

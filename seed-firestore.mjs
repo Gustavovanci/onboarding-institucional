@@ -4,35 +4,67 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import admin from 'firebase-admin';
 
-// --- VERSÃO DO SCRIPT: v3.0 ---
-// Se esta mensagem não aparecer no terminal, o arquivo não foi salvo corretamente.
-console.log('--- EXECUTANDO SCRIPT DE SEED v3.0 ---');
+// --- VERSÃO DO SCRIPT: v5.0 ---
+console.log('--- EXECUTANDO SCRIPT DE SEED v5.0 ---');
 
 const modulesData = [
   {
+    id: 'boas-vindas',
+    data: {
+      title: 'Boas-Vindas e Nosso Papel',
+      description: 'Um alinhamento de expectativas, nossa cultura e como nos conectamos ao SUS.',
+      category: 'Cultura e Pessoas',
+      estimatedMinutes: 15,
+      points: 100,
+      order: 1,
+      isRequired: true,
+      imageUrl: '/images/modules/boas-vindas.jpg' // Crie ou use uma imagem apropriada
+    },
+    content: [
+      { id: 'bv-1', order: 1, title: 'Alinhamento de Expectativas', type: 'text', content: `
+        <details class="group mb-4"><summary class="font-semibold cursor-pointer group-hover:text-brand-azure">Aqui respeitamos o próximo e as diferenças</summary><div class="p-4 bg-gray-50 rounded-lg mt-2"><p>Somos mais de 23.000 colaboradores e falar sobre diversidade é falar de todos nós, pois é exatamente disso que somos feitos, das nossas diferenças. O respeito é a chave para experimentarmos a diversidade no nosso dia a dia. Por isso, não toleramos nenhum tipo de discriminação.</p><p>O nosso slogan representa a nossa Diversidade: "Orgulho de fazer o melhor para as pessoas, com as pessoas".</p><p>Desejamos que você some com a sua singularidade e tenha muito orgulho da sua trajetória aqui!</p></div></details>
+        <details class="group mb-4"><summary class="font-semibold cursor-pointer group-hover:text-brand-azure">Aqui colaboramos uns com os outros</summary><div class="p-4 bg-gray-50 rounded-lg mt-2"><p><strong>Juntos somos melhores, juntos somos +HCFMUSP.</strong> Esse é o nosso lema. Ele reforça o espírito de equipe que valorizamos em nossos profissionais. Juntos, não medimos esforços para fazer o melhor para os nossos pacientes.</p></div></details>
+        <details class="group mb-4"><summary class="font-semibold cursor-pointer group-hover:text-brand-azure">Aqui compartilhamos conhecimentos</summary><div class="p-4 bg-gray-50 rounded-lg mt-2"><p>Aprendemos uns com os outros e temos espaço para compartilhar novas ideias. Somos um hospital escola, e portanto reconhecidos como referência para outras instituições de saúde. Aqui você pode contribuir e terá acesso a aprendizados com profissionais muito experientes. Junte-se a nós na promoção dos conhecimentos!</p></div></details>
+        <details class="group mb-4"><summary class="font-semibold cursor-pointer group-hover:text-brand-azure">Aqui celebramos as conquistas</summary><div class="p-4 bg-gray-50 rounded-lg mt-2"><p>Junte-se a nós no propósito de disseminar as boas práticas e suas conquistas! Fique sempre atento(a) às informações que chegam no seu e-mail: @hc.fm.usp.br, e ao jornal eletrônico semanal Conecta FMUSP-HC, que publiciza semanalmente os nossos resultados e conquistas. Se quiser compartilhar, entre em contato com o Centro de Comunicação Institucional do seu Instituto e informe-se.</p></div></details>
+      `},
+      { id: 'bv-video-1', order: 2, title: 'O que dizem os nossos Gestores?', type: 'video', content: 'https://www.youtube.com/watch?v=SErc_d_tB2I' }, // Substituir pela URL correta
+      { id: 'bv-video-2', order: 3, title: 'O que dizem os colaboradores?', type: 'video', content: 'https://www.youtube.com/watch?v=SErc_d_tB2I' }, // Substituir pela URL correta
+      { id: 'sus-video', order: 4, title: 'Nosso papel e o Sistema Único de Saúde (SUS)', type: 'video', content: 'https://www.youtube.com/watch?v=SErc_d_tB2I' }, // Substituir pela URL do SUS
+    ],
+    quiz: [
+      { order: 1, question: 'Os pacientes SUS atendidos no HC são:', options: ['Agendados no próprio HC', 'Referenciados de outras instituições de saúde, considerando a sua complexidade', 'Familiares de colaboradores'], correct: 1, explanation: 'O Hospital das Clínicas (HC) é um hospital de alta complexidade que recebe pacientes referenciados de outras unidades de saúde. Ou seja, os atendimentos não são feitos por demanda espontânea ou agendamento direto, mas por encaminhamentos realizados através da rede pública de saúde, conforme a gravidade e especialidade necessária.' },
+      { order: 2, question: 'O nosso Slogan "Orgulho de fazer o melhor para as pessoas com as pessoas" reforça:', options: ['a importância das pessoas em todo o processo', 'o nosso orgulho em fazer parte', 'o respeito a todas as pessoas e à diversidade', 'todas as alternativas estão corretas'], correct: 3, explanation: 'O slogan representa os valores humanos, o trabalho em equipe e o compromisso com o cuidado. Ele expressa tanto o orgulho de pertencer ao HC quanto o respeito e a valorização das pessoas — pacientes, profissionais e a comunidade — que fazem parte dessa missão.' },
+    ]
+  },
+  {
     id: 'nossa-historia',
     data: {
-      title: 'Módulo 1: Nossa História',
-      description: 'Navegue pelos marcos que moldaram o ensino, a pesquisa e a assistência no país e assista nosso vídeo institucional.',
+      title: 'Módulo 2: Nossa História',
+      description: 'Navegue pelos marcos que moldaram o ensino, a pesquisa e a assistência no país.',
       category: 'Cultura e Pessoas',
       estimatedMinutes: 10,
-      points: 50,
-      order: 1,
+      points: 100,
+      order: 2,
       isRequired: true,
       imageUrl: '/images/modules/modulo-historia.jpg'
     },
+    // O conteúdo da timeline agora vive na página `HistoryPage`, o quiz fica aqui.
     content: [],
-    quiz: []
+    quiz: [
+        { order: 1, question: 'Qual foi o marco inicial da história da Faculdade de Medicina da USP?', options: ['Criação da Fundação Rockefeller em 1915', 'Criação da Faculdade de Medicina e Cirurgia de São Paulo em 1912', 'Fundação da Universidade de São Paulo (USP) em 1934', 'Inauguração do Hospital das Clínicas em 1944'], correct: 1, explanation: 'A história começa em 1912, quando foi criada a Faculdade de Medicina e Cirurgia de São Paulo, sob a direção de Arnaldo Vieira de Carvalho. Esse foi o embrião que, anos depois, se tornaria parte da USP e daria origem ao Complexo Hospital das Clínicas.' },
+        { order: 2, question: 'Em que ano foi inaugurado o Instituto do Coração (InCor)?', options: ['1976', '1977', '1978', '1982'], correct: 1, explanation: 'O InCor (Instituto do Coração) foi inaugurado em 1977, marcando um avanço importante na cardiologia e cirurgia cardíaca no Brasil. Logo em seguida, em 1978, foi criada a Fundação Zerbini (FZ), que deu suporte técnico e científico ao instituto.' },
+        { order: 3, question: 'O que aconteceu com o Hospital Auxiliar de Suzano (HAS) em 2023?', options: ['Foi reinaugurado com o nome de Instituto Perdizes', 'Passou a ser administrado pela Secretaria Estadual de Saúde de São Paulo', 'Foi incorporado ao Instituto do Câncer do Estado de São Paulo (ICESP)', 'Encerrado definitivamente e demolido'], correct: 1, explanation: 'Após 63 anos de história dentro do Complexo HCFMUSP, o Hospital Auxiliar de Suzano (HAS) deixou de ser gerido pela Faculdade de Medicina/HC e passou para a Secretaria Estadual de Saúde de São Paulo, marcando uma mudança administrativa importante.' },
+    ]
   },
   {
     id: 'cracha-identificacao',
     data: {
-      title: 'Módulo 2: Crachá de Identificação',
+      title: 'Módulo 3: Crachá de Identificação',
       description: 'Entenda a importância e as regras de uso do seu crachá profissional.',
       category: 'Normas Institucionais',
       estimatedMinutes: 5,
-      points: 50,
-      order: 2,
+      points: 100,
+      order: 3,
       isRequired: true,
       imageUrl: '/images/modules/modulo-01.jpg'
     },
@@ -47,12 +79,12 @@ const modulesData = [
   {
     id: 'sistemas-corporativos',
     data: {
-      title: 'Módulo 3: Uso de Sistemas Corporativos',
+      title: 'Módulo 4: Uso de Sistemas Corporativos',
       description: 'Regras para acesso e uso dos sistemas internos do HCFMUSP.',
       category: 'Tecnologia',
       estimatedMinutes: 7,
-      points: 75,
-      order: 3,
+      points: 100,
+      order: 4,
       isRequired: true,
       imageUrl: '/images/modules/modulo-02.jpg'
     },
@@ -67,12 +99,12 @@ const modulesData = [
   {
     id: 'seguranca-informacao',
     data: {
-      title: 'Módulo 4: Política de Segurança da Informação',
+      title: 'Módulo 5: Política de Segurança da Informação',
       description: 'Diretrizes essenciais sobre a LGPD e o tratamento de dados na instituição.',
       category: 'Segurança',
       estimatedMinutes: 10,
       points: 100,
-      order: 4,
+      order: 5,
       isRequired: true,
       imageUrl: '/images/modules/modulo-03.jpg'
     },
@@ -87,12 +119,12 @@ const modulesData = [
   {
     id: 'email-sistemas',
     data: {
-      title: 'Módulo 5: E-mail e Sistemas de Comunicação',
+      title: 'Módulo 6: E-mail e Sistemas de Comunicação',
       description: 'Aprenda a usar as principais ferramentas de comunicação, como e-mail, Intranet e portais.',
       category: 'Comunicação',
       estimatedMinutes: 10,
-      points: 80,
-      order: 5,
+      points: 100,
+      order: 6,
       isRequired: true,
       imageUrl: '/images/modules/modulo-05.jpg'
     },
@@ -107,12 +139,12 @@ const modulesData = [
     {
     id: 'servico-voluntario',
     data: {
-      title: 'Módulo 6: Serviço Voluntário',
+      title: 'Módulo 7: Serviço Voluntário',
       description: 'Entenda as regras e diretrizes para a atuação como voluntário no HCFMUSP.',
       category: 'Normas Institucionais',
       estimatedMinutes: 8,
-      points: 50,
-      order: 6,
+      points: 100,
+      order: 7,
       isRequired: true,
       imageUrl: '/images/modules/modulo-04.jpg'
     },
@@ -127,12 +159,12 @@ const modulesData = [
   {
     id: 'hcx-plataforma',
     data: {
-      title: 'Módulo 7: HCX: Plataforma de Cursos',
-      description: 'Acesse a plataforma de cursos e desenvolvimento do HCFMUSP.',
+      title: 'Módulo 8: HCX - Cursos Obrigatórios',
+      description: 'Acesse a plataforma de cursos e desenvolvimento do HCFMUSP para seus treinamentos obrigatórios.',
       category: 'Desenvolvimento',
       estimatedMinutes: 5,
-      points: 20,
-      order: 7,
+      points: 50,
+      order: 8,
       isRequired: false, // Módulo Opcional
       imageUrl: '/images/modules/modulo-hcx.jpg',
       url: 'https://hcx.fm.usp.br/login' // Link externo
@@ -144,24 +176,94 @@ const modulesData = [
 
 const contentPagesData = [
   {
+      id: 'quem-somos',
+      data: {
+          title: 'Quem Somos',
+          content: `
+            <div class="space-y-4">
+              <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg"><h3>Missão/Causa</h3><p class="mt-2 text-gray-700">Fazer o melhor para as pessoas, com as pessoas!</p></div>
+              <div class="bg-green-50 border border-green-200 p-4 rounded-lg"><h3>Visão</h3><p class="mt-2 text-gray-700">Ser uma Instituição de excelência, reconhecida nacional e internacionalmente em Ensino, Pesquisa, Assistência e Inovação.</p></div>
+              <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg"><h3>Valores</h3><ul class="list-disc list-inside mt-2 text-gray-700"><li>Ética</li><li>Humanismo</li><li>Responsabilidade Social</li><li>Pluralismo</li><li>Pioneirismo</li><li>Compromisso Institucional</li></ul></div>
+            </div>
+          `
+      }
+  },
+  {
       id: 'beneficios',
       data: {
           title: 'Benefícios ao Colaborador',
-          content: `<h3>Centro de Atenção ao Colaborador (CeAC)</h3>...` // Conteúdo completo aqui
+          content: `
+            <div class="prose max-w-none">
+              <h2>Centro de Atenção ao Colaborador (CeAC)</h2>
+              <p>O CeAC, localizado ao lado da quadra do Instituto de Psiquiatria (IPq), é responsável pelas ações de Medicina do Trabalho e Engenharia de Segurança - SESMT e pelos cuidados de saúde em doenças que dificultem ou inviabilizem a execução das atividades de trabalho.</p>
+              
+              <h3>Serviço de Pronto Atendimento (durante a jornada de trabalho)</h3>
+              <p>Oferece atendimento aos colaboradores que apresentem sintomas de doenças que necessitem de atendimento imediato durante sua jornada de trabalho. Em situações de doenças crônicas ou sintomas antigos, o Pronto Atendimento encaminhará o colaborador para atendimento em uma Unidade Básica de Saúde.</p>
+              <p><strong>Horário de funcionamento:</strong> 07h às 19h - (As senhas são distribuídas até as 18h).</p>
+              <p><strong>Telefones:</strong> 2661-2226 ou 2661-6893</p>
+
+              <hr/>
+              <h2>DESENVOLVIMENTO TÉCNICO E PROFISSIONAL</h2>
+              <h3>HCX - Experiência e Ensino</h3>
+              <p>Todos os colaboradores acessam os conteúdos de treinamentos obrigatórios e de desenvolvimento de hard e sofits skills para o seu aperfeiçoamento profissional de forma gratuita, por meio da Plataforma de Treinamento, disponível na Intranet.</p>
+              <a href="https://hcx.fm.usp.br" target="_blank">Clique na imagem para acessar.</a>
+
+              <hr/>
+              <h2>PARCEIROS</h2>
+              <h3>Associação dos Servidores do Hospital das Clínicas</h3>
+              <a href="https://ashc.com.br/" target="_blank" rel="noopener noreferrer">
+                <p>Disponível aos colaboradores HC, FFM e FZ, a Associação dos Servidores do HCFMUSP (ASHC) oferece uma gama de benefícios aos seus associados...</p>
+              </a>
+            </div>
+          `
       }
   },
   {
       id: 'comunicacao',
       data: {
           title: 'Canais de Comunicação',
-          content: `<h3>Programa Você Dialogando com o HC</h3>...` // Conteúdo completo aqui
+          content: `
+            <div class="prose max-w-none">
+              <a href="https://servicosngp.hc.fm.usp.br/" target="_blank" rel="noopener noreferrer"><h2>Fale com o RH Corporativo</h2></a>
+              <p>Você e o seu Responsável Técnico (Gestor/Liderança) podem entrar em contato a qualquer momento para esclarecimentos de dúvidas, sugestões e elogios pelo Canal corporativo Fale com o RH.</p>
+              
+              <h2>Centros de Gestão de Pessoas</h2>
+              <p>Em cada Instituto, atua um Centro de Gestão de Pessoas (CGP) que faz o atendimento dos seus respectivos colaboradores.</p>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div class="bg-gray-100 p-4 rounded-lg"><strong>Instituto do Câncer (ICESP):</strong> 6º andar, 07h às 17h</div>
+                <div class="bg-gray-100 p-4 rounded-lg"><strong>Instituto Central (ICHC):</strong> 8º andar, 07h às 16h</div>
+                <div class="bg-gray-100 p-4 rounded-lg"><strong>Instituto da Criança (ICr):</strong> Portaria 2, 2º andar, 07h às 16h</div>
+                <div class="bg-gray-100 p-4 rounded-lg"><strong>Instituto do Coração (InCor):</strong> Bloco I, 2º andar, 07h às 16h</div>
+                <div class="bg-gray-100 p-4 rounded-lg"><strong>Instituto de Ortopedia e Traumatologia (IOT):</strong> Térreo, sala 209, 07h às 16h</div>
+                <div class="bg-gray-100 p-4 rounded-lg"><strong>Instituto de Psiquiatria (IPq):</strong> 1° andar- Ala Sul, sala 81, 07h às 16h</div>
+              </div>
+            </div>
+          `
       }
   },
   {
-      id: 'inovacao',
+      id: 'inovahc',
       data: {
-          title: 'Inova HC',
-          content: `<h3>Ecossistema de Inovação</h3><p>Esta seção está em desenvolvimento. Em breve, você encontrará aqui informações sobre o ecossistema de inovação do HCFMUSP e como você pode participar.</p>`
+          title: 'InovaHC',
+          content: `
+            <div class="prose max-w-none text-center">
+                <h2>O InovaHC é o Núcleo de Inovação Tecnológica do Hospital das Clínicas da FMUSP</h2>
+                <p>Desde 2015, somos agentes de transformação, conectando pesquisadores, empreendedores, colaboradores e parceiros para criar soluções que geram impacto real na saúde do Brasil. Nosso propósito é transformar conhecimento em inovação aplicada, contribuindo para a melhoria da qualidade de vida das pessoas e para a sustentabilidade do sistema de saúde.</p>
+                <h3>O que fazemos:</h3>
+                <ul class="list-disc list-inside inline-block text-left">
+                    <li>Viabilizamos soluções e negócios inovadores para o HCFMUSP e para o sistema de saúde.</li>
+                    <li>Promovemos a cultura de inovação e o empreendedorismo científico.</li>
+                    <li>Mapeamos desafios reais do setor de saúde.</li>
+                    <li>Codesenvolvemos e validamos tecnologias em ambiente de referência.</li>
+                    <li>Conectamos o ecossistema de inovação em saúde no Brasil e no mundo.</li>
+                </ul>
+                <div class="aspect-video my-8"><iframe class="w-full h-full" src="https://www.youtube.com/embed/H8nIFk_bLbc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+                <a href="https://inovahc.com.br/" target="_blank" rel="noopener noreferrer" class="inline-block mt-4">
+                    <img src="/images/inovahc-logo.png" alt="Logo InovaHC" class="mx-auto h-24">
+                </a>
+            </div>
+          `
       }
   }
 ];
@@ -215,7 +317,10 @@ async function seedDatabase() {
     }
     if (quiz?.length) {
       const batch = db.batch();
-      quiz.forEach(item => batch.set(moduleRef.collection('quiz').doc(), item));
+      quiz.forEach(item => {
+        const docRef = moduleRef.collection('quiz').doc(); // Auto-generate ID
+        batch.set(docRef, item);
+      });
       await batch.commit();
     }
   }

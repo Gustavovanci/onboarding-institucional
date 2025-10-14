@@ -1,7 +1,6 @@
 // src/pages/ProfilePage.tsx
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { Building, Briefcase, Edit, User as UserIcon, Clock, Award, TrendingUp, Mail } from "lucide-react";
+import { Mail, Briefcase, Edit, Award, TrendingUp } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { INSTITUTOS_CONFIG } from "@/types";
