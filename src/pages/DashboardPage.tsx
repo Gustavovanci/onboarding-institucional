@@ -6,6 +6,7 @@ import { Award, TrendingUp } from "lucide-react";
 
 import { useAuthStore } from "../stores/authStore";
 import { useModulesStore } from "../stores/modulesStore";
+import useGamificationStore from "../stores/gamificationStore";
 import WelcomeModal from "../components/ui/WelcomeModal";
 import { StaticOnboardingTour } from '../components/ui/StaticOnboardingTour';
 import { DeadlineCard } from "../components/dashboard/DeadlineCard";
@@ -15,37 +16,67 @@ import ProfileCard from "../components/dashboard/ProfileCard";
 import { WelcomeHeader } from "../components/dashboard/WelcomeHeader";
 import { INSTITUTOS_CONFIG } from "../types";
 
-// Ponto 11: Defina aqui os caminhos para as imagens do tour que você criará
-// Coloque as imagens na pasta /public/tour/
 const tourImages = [
-  '/tour/passo1.png', // Ex: Mostra o menu lateral e explica suas funções
-  '/tour/passo2.png', // Ex: Destaca o card de perfil e os status (pontos, ranking)
-  '/tour/passo3.png', // Ex: Aponta para os cards de Prazo, Conquistas e Ranking
-  '/tour/passo4.png', // Ex: Mostra as notificações e o menu do usuário no header
-  '/tour/passo5.png', // Ex: Tela final, incentivando o usuário a começar pelos módulos
+  '/tour/passo1.png',
+  '/tour/passo2.png',
+  '/tour/passo3.png',
+  '/tour/passo4.png',
+  '/tour/passo5.png',
 ];
 
 export default function DashboardPage() {
   const { user, updateUserProfile } = useAuthStore();
   const { modules } = useModulesStore();
+  const { leaderboard, instituteLeaderboards, fetchLeaderboard, fetchInstituteLeaderboard } = useGamificationStore();
+
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [startTour, setStartTour] = useState(false);
+  const [isModalLogicActive, setIsModalLogicActive] = useState(false);
 
   useEffect(() => {
-    if (user && !user.welcomeModalSeen) {
+    if (user && !user.welcomeModalSeen && !isModalLogicActive) {
+      setIsModalLogicActive(true);
       const timer = setTimeout(() => {
         setShowWelcomeModal(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [user, user?.welcomeModalSeen, isModalLogicActive]);
+
+  useEffect(() => {
+    if (user) {
+      fetchLeaderboard();
+      if (user.instituto && !instituteLeaderboards[user.instituto]) {
+        fetchInstituteLeaderboard(user.instituto);
+      }
+    }
+  }, [user, fetchLeaderboard, fetchInstituteLeaderboard, instituteLeaderboards]);
+
+  useEffect(() => {
+    if (user && leaderboard.length > 0) {
+      const generalRank = leaderboard.findIndex(p => p.uid === user.uid) + 1;
+      if (generalRank > 0 && generalRank !== user.currentRank) {
+        updateUserProfile({ currentRank: generalRank });
+      }
+    }
+
+    if (user && user.instituto && instituteLeaderboards[user.instituto]) {
+      const instituteRank = instituteLeaderboards[user.instituto].findIndex(p => p.uid === user.uid) + 1;
+      if (instituteRank > 0 && instituteRank !== user.instituteRank) {
+        updateUserProfile({ instituteRank: instituteRank });
+      }
+    }
+  }, [user, leaderboard, instituteLeaderboards, updateUserProfile]);
 
   const handleModalClose = (shouldStartTour: boolean) => {
     setShowWelcomeModal(false);
     if (user && !user.welcomeModalSeen) {
-      updateUserProfile({ welcomeModalSeen: true });
-    }
-    if (shouldStartTour && user && !user.tourSeen) {
+      updateUserProfile({ welcomeModalSeen: true }).then(() => {
+        if (shouldStartTour && !user.tourSeen) {
+          setTimeout(() => setStartTour(true), 300);
+        }
+      });
+    } else if (shouldStartTour && user && !user.tourSeen) {
       setTimeout(() => setStartTour(true), 300);
     }
   };
@@ -61,6 +92,7 @@ export default function DashboardPage() {
     return <div className="flex justify-center items-center h-screen"><LoadingSpinner /></div>;
   }
   
+  const institutConfig = user?.instituto ? INSTITUTOS_CONFIG[user.instituto] : null;
   const requiredModules = modules.filter(m => m.isRequired);
   const completedRequiredModules = user.completedModules.filter(id => requiredModules.some(m => m.id === id));
   
@@ -87,6 +119,7 @@ export default function DashboardPage() {
         <div id="tour-step-2-main-profile-card">
           <ProfileCard
             user={user}
+            institutConfig={institutConfig}
             completedModulesCount={completedRequiredModules.length}
             totalModules={requiredModules.length}
           />
@@ -125,8 +158,8 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="space-y-3">
-              <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Ranking Geral</span><span className="font-bold text-purple-700">#{user.currentRank || 'N/A'}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Ranking do Instituto</span><span className="font-bold text-purple-700">#{user.instituteRank || 'N/A'}</span></div>
+              <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Ranking Geral</span><span className="font-bold text-purple-700">{user.currentRank > 0 ? `#${user.currentRank}` : '-'}</span></div>
+              <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Ranking do Instituto</span><span className="font-bold text-purple-700">{user.instituteRank > 0 ? `#${user.instituteRank}` : '-'}</span></div>
               <Link to="/ranking" className="block text-center pt-2 text-purple-600 font-semibold hover:underline">Ver Ranking Completo</Link>
             </div>
           </motion.div>

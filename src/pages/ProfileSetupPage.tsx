@@ -24,12 +24,16 @@ const ProfileSetupPage = () => {
     setError('');
 
     try {
+      // CORREÇÃO 13 e 14: Marca o modal como visto e solicita o início do tour
       await updateUserProfile({
         instituto,
         profession,
         profileCompleted: true,
+        welcomeModalSeen: true, // Impede que o modal de boas-vindas apareça
+        tourSeen: false, // Garante que o tour será exibido
       });
-      navigate('/dashboard');
+      // Navega para o dashboard passando o estado para iniciar o tour
+      navigate('/dashboard', { state: { startTour: true } });
     } catch (e) {
       console.error("Erro ao salvar perfil:", e);
       setError('Ocorreu um erro ao salvar seu perfil. Tente novamente.');

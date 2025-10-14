@@ -1,7 +1,7 @@
 // src/components/ui/StaticOnboardingTour.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, CheckCircle, ImageOff } from 'lucide-react';
 
 interface StaticOnboardingTourProps {
   isOpen: boolean;
@@ -11,6 +11,14 @@ interface StaticOnboardingTourProps {
 
 export const StaticOnboardingTour = ({ isOpen, onClose, images }: StaticOnboardingTourProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Reseta o estado de erro quando o tour é aberto ou a imagem muda
+    if (isOpen) {
+      setImageError(false);
+    }
+  }, [isOpen, currentIndex]);
 
   if (!isOpen) {
     return null;
@@ -40,19 +48,27 @@ export const StaticOnboardingTour = ({ isOpen, onClose, images }: StaticOnboardi
       >
         <div className="relative bg-gray-100 dark:bg-gray-900 aspect-[16/9] flex items-center justify-center text-gray-500">
           <AnimatePresence mode="wait">
-            <motion.img
-              key={currentIndex}
-              src={images[currentIndex]}
-              alt={`Passo do Tour ${currentIndex + 1}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 w-full h-full object-contain z-10"
-              onError={(e) => (e.currentTarget.style.display = 'none')}
-            />
+            {imageError ? (
+              <motion.div key="error" className="flex flex-col items-center text-red-500 z-20 p-4 text-center">
+                <ImageOff className="w-12 h-12 mb-2" />
+                <p className="font-semibold">Erro ao carregar a imagem do tour</p>
+                <p className="text-xs">Verifique se o arquivo <code className="bg-red-100 p-1 rounded text-red-800">{images[currentIndex]}</code> existe na pasta `public/tour`.</p>
+              </motion.div>
+            ) : (
+              <motion.img
+                key={currentIndex}
+                src={images[currentIndex]}
+                alt={`Passo do Tour ${currentIndex + 1}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0 w-full h-full object-contain z-10"
+                onError={() => setImageError(true)}
+              />
+            )}
           </AnimatePresence>
-          <span className="z-0">Carregando imagem do tour...</span>
+          {!imageError && <span className="z-0">Carregando imagem do tour...</span>}
         </div>
 
         <button

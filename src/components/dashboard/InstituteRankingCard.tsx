@@ -6,7 +6,6 @@ import { Trophy } from 'lucide-react';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { Link } from 'react-router-dom';
 
-// ATENÇÃO: A linha abaixo DEVE ser "export const", não "export default"
 export const InstituteRankingCard = () => {
   const { user } = useAuthStore();
   const { instituteLeaderboards, fetchInstituteLeaderboard, isLoading } = useGamificationStore();
@@ -17,12 +16,12 @@ export const InstituteRankingCard = () => {
     }
   }, [user, instituteLeaderboards, fetchInstituteLeaderboard]);
 
-  if (!user) return null;
+  if (!user?.instituto) return null;
 
   const leaderboard = instituteLeaderboards[user.instituto] || [];
 
   return (
-    <div className="card-elevated bg-yellow-50 border-yellow-200">
+    <div className="card-elevated bg-yellow-50 border-yellow-200 h-full flex flex-col">
       <div className="flex items-center gap-4 mb-4">
         <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
           <Trophy className="w-6 h-6 text-yellow-600" />
@@ -41,14 +40,18 @@ export const InstituteRankingCard = () => {
               <li key={player.uid} className={`flex items-center justify-between p-2 rounded-lg ${player.uid === user.uid ? 'bg-yellow-200/80' : ''}`}>
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-sm w-5 text-center text-yellow-800">{index + 1}</span>
-                  <img src={player.photoURL || `https://ui-avatars.com/api/?name=${player.displayName}`} alt={player.displayName} className="w-8 h-8 rounded-full" />
+                  <img 
+                    crossOrigin="anonymous" // <-- CORREÇÃO APLICADA
+                    src={player.photoURL || `https://ui-avatars.com/api/?name=${player.displayName}`} 
+                    alt={player.displayName} className="w-8 h-8 rounded-full" 
+                   />
                   <span className="text-sm font-semibold text-gray-700 truncate max-w-[120px] sm:max-w-none">{player.displayName}</span>
                 </div>
                 <span className="text-sm font-bold text-yellow-800">{player.points} pts</span>
               </li>
             )) : <p className="text-sm text-center text-gray-500 pt-8">Ainda não há ranking para este instituto.</p>}
           </ul>
-          <Link to="/ranking" className="block text-center mt-4 text-yellow-700 font-semibold hover:underline">Ver ranking completo</Link>
+          <Link to="/ranking" className="block text-center mt-auto pt-4 text-yellow-700 font-semibold hover:underline">Ver ranking completo</Link>
         </div>
       )}
     </div>

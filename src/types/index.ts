@@ -1,21 +1,23 @@
 // src/types/index.ts
 
-// DEFINIÇÃO DO TIPO
 export type Instituto =
   | "ICHC" | "InCor" | "IOT" | "IPQ" | "InRad" | "ICr"
   | "ICESP" | "IMREA" | "LIMs" | "IPer" | "IGS"
-  // CORREÇÃO CRÍTICA: "Outros" foi adicionado. É ESSENCIAL para que
-  // o cadastro de novos usuários funcione, pois o sistema atribui "Outros"
-  // como valor padrão antes do usuário escolher seu instituto real.
   | "Outros";
 
 export type Role = "employee" | "coordinator" | "admin";
 
 export interface UserPersonalizations {
-  colorTheme: string;
-  statusEmoji: string;
-  customTitle: string;
-  favoriteQuote?: string;
+  colorTheme?: string;
+  statusEmoji?: string;
+  customTitle?: string;
+}
+
+export interface QuizAttempt {
+  moduleId: string;
+  attempts: number;
+  passed: boolean;
+  score: number;
 }
 
 export interface User {
@@ -30,17 +32,15 @@ export interface User {
   points: number;
   badges: string[];
   completedModules: string[];
-  quizAttempts: any[]; // Adicionado para consistência com o defaultUserStructure
-  certificates: string[];
+  quizAttempts: Record<string, QuizAttempt>;
   createdAt: number;
-  lastAccess: number | any; // Any para aceitar o serverTimestamp do Firebase
+  lastAccess: number | any;
   profileCompleted: boolean;
   onboardingCompleted: boolean;
   currentRank: number;
-  previousRank?: number;
   instituteRank: number;
   welcomeModalSeen: boolean;
-  tourSeen: boolean; // Adicionado para consistência com o defaultUserStructure
+  tourSeen: boolean;
   personalizations: UserPersonalizations;
 }
 
@@ -53,16 +53,27 @@ export interface Module {
   category: string;
   estimatedMinutes: number;
   imageUrl?: string;
-  content: Array<{ id: string; title: string; content: string; type: 'text' | 'video' | 'quiz' | 'link' }>;
+  isRequired: boolean;
+  url?: string; // Campo para links externos
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: 'module_completion' | 'badge_earned' | 'feedback_received' | 'admin_message';
+  message: string;
+  read: boolean;
+  createdAt: number;
+  link?: string;
 }
 
 export interface Certificate {
   id: string;
   userId: string;
   moduleId: string;
+  moduleTitle: string;
   completionDate: number;
   certificateNumber: string;
-  score?: number;
 }
 
 export interface Badge {
@@ -72,11 +83,6 @@ export interface Badge {
   icon: string;
   category: 'completion' | 'engagement' | 'special';
   points: number;
-  requirements: {
-    modulesCompleted?: number;
-    pointsReached?: number;
-    profileCustomized?: boolean;
-  };
 }
 
 export interface InstitutoConfig {
@@ -86,13 +92,9 @@ export interface InstitutoConfig {
   color: string;
 }
 
-// ==================================================================
-// == CONSTANTES (valores usados no código JavaScript) ==
-// ==================================================================
-
 export const INSTITUTOS_ARRAY: Instituto[] = [
   "ICHC", "InCor", "IOT", "IPQ", "InRad", "ICr",
-  "ICESP", "IMREA", "LIMs", "IPer", "IGS", "Outros" // "Outros" adicionado aqui também
+  "ICESP", "IMREA", "LIMs", "IPer", "IGS", "Outros"
 ];
 
 export const PROFESSIONS_ARRAY: string[] = [

@@ -29,25 +29,22 @@ function App() {
   const { isLoading: isAuthLoading, isAuthenticated, initializeAuthListener } = useAuthStore();
   const { fetchModules, hasFetched, isLoading: isModulesLoading } = useModulesStore();
 
-  // Inicializa o listener de autenticação uma única vez
   useEffect(() => {
     const unsubscribe = initializeAuthListener();
     return () => unsubscribe();
   }, [initializeAuthListener]);
 
-  // Busca os módulos assim que o usuário é autenticado
   useEffect(() => {
     if (isAuthenticated && !hasFetched) {
       fetchModules();
     }
   }, [isAuthenticated, hasFetched, fetchModules]);
 
-  // Condição de Carregamento Robusta
   if (isAuthLoading || (isAuthenticated && !hasFetched && isModulesLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-brand-light">
         <div className="text-center space-y-4">
-          <LoadingSpinner />
+          <LoadingSpinner size="lg" />
           <p className="text-gray-600 animate-pulse">Carregando plataforma...</p>
         </div>
       </div>
@@ -58,14 +55,11 @@ function App() {
     <Router>
       <AppErrorBoundary>
         <Routes>
-          {/* Rota de Login/Home */}
           <Route path="/" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
           <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
           
-          {/* Rota de Setup de Perfil */}
           <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetupPage /></ProtectedRoute>} />
           
-          {/* Rotas Protegidas que requerem perfil completo */}
           <Route element={<ProtectedRoute><ProfileCheck /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Layout><DashboardPage /></Layout>} />
             <Route path="/modules" element={<Layout><ModulesGridPage /></Layout>} />
@@ -74,6 +68,8 @@ function App() {
             <Route path="/modules/:moduleId/quiz" element={<QuizPage />} />
             <Route path="/ranking" element={<Layout><RankingPage /></Layout>} />
             <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
+            {/* CORREÇÃO: Adicionada rota de redirecionamento para /settings */}
+            <Route path="/settings" element={<Navigate to="/profile" />} />
             <Route path="/certificates" element={<Layout><CertificatesPage /></Layout>} />
             <Route path="/messages" element={<Layout><MessagesPage /></Layout>} />
             <Route path="/benefits" element={<Layout><BenefitsPage /></Layout>} />
@@ -81,7 +77,6 @@ function App() {
             <Route path="/innovation" element={<Layout><InnovationPage /></Layout>} />
           </Route>
 
-          {/* Rota para Página Não Encontrada */}
           <Route path="*" element={
             <div className="min-h-screen flex items-center justify-center text-center p-4">
               <div>

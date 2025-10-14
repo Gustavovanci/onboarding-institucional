@@ -69,7 +69,8 @@ export default function ModulePage() {
           )}
         </div>
         
-        <div className="mt-12 text-center">
+        {/* CORREÇÃO 6: Aumentado o espaçamento para evitar sobreposição */}
+        <div className="mt-16 text-center">
           {isCompleted ? (
             <div className="inline-flex items-center space-x-2 bg-green-100 text-green-700 font-semibold px-6 py-3 rounded-xl">
               <CheckCircle className="w-6 h-6" />

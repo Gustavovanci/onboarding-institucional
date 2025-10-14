@@ -5,16 +5,19 @@ import useGamificationStore from '@/stores/gamificationStore';
 import { motion } from 'framer-motion';
 import { Crown, Medal, Trophy } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { INSTITUTOS_ARRAY, INSTITUTOS_CONFIG, type Instituto } from '@/types';
+import { INSTITUTOS_CONFIG, type Instituto } from '@/types';
+
+type FilterType = 'Geral' | 'Meu Instituto';
 
 const RankingPage = () => {
   const { user } = useAuthStore();
   const { leaderboard, isLoading, fetchLeaderboard } = useGamificationStore();
-  const [filter, setFilter] = useState<Instituto | 'Geral'>('Geral');
+  const [filter, setFilter] = useState<FilterType>('Geral');
 
   useEffect(() => {
-    fetchLeaderboard(filter === 'Geral' ? undefined : filter);
-  }, [filter, fetchLeaderboard]);
+    const instituteToFetch = filter === 'Meu Instituto' ? user?.instituto : undefined;
+    fetchLeaderboard(instituteToFetch);
+  }, [filter, fetchLeaderboard, user?.instituto]);
 
   const getRankIndicator = (index: number) => {
     if (index === 0) return <Crown className="w-6 h-6 text-yellow-500" />;
@@ -30,17 +33,16 @@ const RankingPage = () => {
         <p className="mt-2 text-lg text-gray-600">Veja sua posição e a dos seus colegas na jornada de integração.</p>
       </div>
 
-      {/* Ponto 6: Filtro de Ranking */}
       <div className="flex justify-center">
         <select
           value={filter}
-          onChange={(e) => setFilter(e.target.value as Instituto | 'Geral')}
+          onChange={(e) => setFilter(e.target.value as FilterType)}
           className="px-4 py-2 border rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-brand-azure"
         >
           <option value="Geral">Ranking Geral</option>
-          {INSTITUTOS_ARRAY.filter(i => i !== 'Outros').map((instituto) => (
-            <option key={instituto} value={instituto}>{INSTITUTOS_CONFIG[instituto]?.fullName || instituto}</option>
-          ))}
+          {user?.instituto && user.instituto !== "Outros" && (
+            <option value="Meu Instituto">Meu Instituto ({INSTITUTOS_CONFIG[user.instituto]?.name})</option>
+          )}
         </select>
       </div>
 
@@ -74,7 +76,7 @@ const RankingPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-4">
                       <img
-                        crossOrigin="anonymous" // <-- CORREÇÃO APLICADA
+                        crossOrigin="anonymous"
                         src={player.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.displayName)}&background=random`}
                         alt={player.displayName || ''}
                         className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
