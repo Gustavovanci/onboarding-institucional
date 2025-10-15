@@ -43,30 +43,38 @@ export default function DashboardPage() {
     }
   }, [user, user?.welcomeModalSeen, isModalLogicActive]);
 
+  // CORREÇÃO: Efeito para buscar dados, executado de forma mais controlada.
   useEffect(() => {
-    if (user) {
+    if (user?.uid) {
       fetchLeaderboard();
-      if (user.instituto && !instituteLeaderboards[user.instituto]) {
+      if (user.instituto) {
         fetchInstituteLeaderboard(user.instituto);
       }
     }
-  }, [user, fetchLeaderboard, fetchInstituteLeaderboard, instituteLeaderboards]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, user?.instituto]); // Depende apenas de IDs estáveis do usuário
 
+  // CORREÇÃO: Efeito para ATUALIZAR o ranking, separado do resto.
+  // Ele só roda quando os leaderboards (fonte da verdade) mudam.
   useEffect(() => {
-    if (user && leaderboard.length > 0) {
-      const generalRank = leaderboard.findIndex(p => p.uid === user.uid) + 1;
-      if (generalRank > 0 && generalRank !== user.currentRank) {
-        updateUserProfile({ currentRank: generalRank });
-      }
-    }
+    if (!user || leaderboard.length === 0) return;
 
-    if (user && user.instituto && instituteLeaderboards[user.instituto]) {
-      const instituteRank = instituteLeaderboards[user.instituto].findIndex(p => p.uid === user.uid) + 1;
-      if (instituteRank > 0 && instituteRank !== user.instituteRank) {
-        updateUserProfile({ instituteRank: instituteRank });
-      }
+    const generalRank = leaderboard.findIndex(p => p.uid === user.uid) + 1;
+    const instituteBoard = user.instituto ? instituteLeaderboards[user.instituto] : undefined;
+    const instituteRank = instituteBoard ? instituteBoard.findIndex(p => p.uid === user.uid) + 1 : 0;
+
+    const needsUpdate = (generalRank > 0 && generalRank !== user.currentRank) || (instituteRank > 0 && instituteRank !== user.instituteRank);
+
+    if (needsUpdate) {
+      updateUserProfile({
+        currentRank: generalRank > 0 ? generalRank : user.currentRank,
+        instituteRank: instituteRank > 0 ? instituteRank : user.instituteRank,
+      });
     }
-  }, [user, leaderboard, instituteLeaderboards, updateUserProfile]);
+    // Este efeito NÃO deve depender do 'user' para evitar o loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leaderboard, instituteLeaderboards]);
+
 
   const handleModalClose = (shouldStartTour: boolean) => {
     setShowWelcomeModal(false);

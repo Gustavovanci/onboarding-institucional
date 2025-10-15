@@ -4,67 +4,40 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import admin from 'firebase-admin';
 
-// --- VERSÃO DO SCRIPT: v5.0 ---
-console.log('--- EXECUTANDO SCRIPT DE SEED v5.0 ---');
+// --- VERSÃO DO SCRIPT: v5.1 (Refatoração Boas-Vindas) ---
+console.log('--- EXECUTANDO SCRIPT DE SEED v7.0 ---');
 
 const modulesData = [
-  {
-    id: 'boas-vindas',
-    data: {
-      title: 'Boas-Vindas e Nosso Papel',
-      description: 'Um alinhamento de expectativas, nossa cultura e como nos conectamos ao SUS.',
-      category: 'Cultura e Pessoas',
-      estimatedMinutes: 15,
-      points: 100,
-      order: 1,
-      isRequired: true,
-      imageUrl: '/images/modules/boas-vindas.jpg' // Crie ou use uma imagem apropriada
-    },
-    content: [
-      { id: 'bv-1', order: 1, title: 'Alinhamento de Expectativas', type: 'text', content: `
-        <details class="group mb-4"><summary class="font-semibold cursor-pointer group-hover:text-brand-azure">Aqui respeitamos o próximo e as diferenças</summary><div class="p-4 bg-gray-50 rounded-lg mt-2"><p>Somos mais de 23.000 colaboradores e falar sobre diversidade é falar de todos nós, pois é exatamente disso que somos feitos, das nossas diferenças. O respeito é a chave para experimentarmos a diversidade no nosso dia a dia. Por isso, não toleramos nenhum tipo de discriminação.</p><p>O nosso slogan representa a nossa Diversidade: "Orgulho de fazer o melhor para as pessoas, com as pessoas".</p><p>Desejamos que você some com a sua singularidade e tenha muito orgulho da sua trajetória aqui!</p></div></details>
-        <details class="group mb-4"><summary class="font-semibold cursor-pointer group-hover:text-brand-azure">Aqui colaboramos uns com os outros</summary><div class="p-4 bg-gray-50 rounded-lg mt-2"><p><strong>Juntos somos melhores, juntos somos +HCFMUSP.</strong> Esse é o nosso lema. Ele reforça o espírito de equipe que valorizamos em nossos profissionais. Juntos, não medimos esforços para fazer o melhor para os nossos pacientes.</p></div></details>
-        <details class="group mb-4"><summary class="font-semibold cursor-pointer group-hover:text-brand-azure">Aqui compartilhamos conhecimentos</summary><div class="p-4 bg-gray-50 rounded-lg mt-2"><p>Aprendemos uns com os outros e temos espaço para compartilhar novas ideias. Somos um hospital escola, e portanto reconhecidos como referência para outras instituições de saúde. Aqui você pode contribuir e terá acesso a aprendizados com profissionais muito experientes. Junte-se a nós na promoção dos conhecimentos!</p></div></details>
-        <details class="group mb-4"><summary class="font-semibold cursor-pointer group-hover:text-brand-azure">Aqui celebramos as conquistas</summary><div class="p-4 bg-gray-50 rounded-lg mt-2"><p>Junte-se a nós no propósito de disseminar as boas práticas e suas conquistas! Fique sempre atento(a) às informações que chegam no seu e-mail: @hc.fm.usp.br, e ao jornal eletrônico semanal Conecta FMUSP-HC, que publiciza semanalmente os nossos resultados e conquistas. Se quiser compartilhar, entre em contato com o Centro de Comunicação Institucional do seu Instituto e informe-se.</p></div></details>
-      `},
-      { id: 'bv-video-1', order: 2, title: 'O que dizem os nossos Gestores?', type: 'video', content: 'https://www.youtube.com/watch?v=SErc_d_tB2I' }, // Substituir pela URL correta
-      { id: 'bv-video-2', order: 3, title: 'O que dizem os colaboradores?', type: 'video', content: 'https://www.youtube.com/watch?v=SErc_d_tB2I' }, // Substituir pela URL correta
-      { id: 'sus-video', order: 4, title: 'Nosso papel e o Sistema Único de Saúde (SUS)', type: 'video', content: 'https://www.youtube.com/watch?v=SErc_d_tB2I' }, // Substituir pela URL do SUS
-    ],
-    quiz: [
-      { order: 1, question: 'Os pacientes SUS atendidos no HC são:', options: ['Agendados no próprio HC', 'Referenciados de outras instituições de saúde, considerando a sua complexidade', 'Familiares de colaboradores'], correct: 1, explanation: 'O Hospital das Clínicas (HC) é um hospital de alta complexidade que recebe pacientes referenciados de outras unidades de saúde. Ou seja, os atendimentos não são feitos por demanda espontânea ou agendamento direto, mas por encaminhamentos realizados através da rede pública de saúde, conforme a gravidade e especialidade necessária.' },
-      { order: 2, question: 'O nosso Slogan "Orgulho de fazer o melhor para as pessoas com as pessoas" reforça:', options: ['a importância das pessoas em todo o processo', 'o nosso orgulho em fazer parte', 'o respeito a todas as pessoas e à diversidade', 'todas as alternativas estão corretas'], correct: 3, explanation: 'O slogan representa os valores humanos, o trabalho em equipe e o compromisso com o cuidado. Ele expressa tanto o orgulho de pertencer ao HC quanto o respeito e a valorização das pessoas — pacientes, profissionais e a comunidade — que fazem parte dessa missão.' },
-    ]
-  },
+  // MÓDULO 1: Nossa História
   {
     id: 'nossa-historia',
     data: {
-      title: 'Módulo 2: Nossa História',
+      title: 'Módulo 1: Nossa História',
       description: 'Navegue pelos marcos que moldaram o ensino, a pesquisa e a assistência no país.',
       category: 'Cultura e Pessoas',
       estimatedMinutes: 10,
       points: 100,
-      order: 2,
+      order: 1, // Ordem correta
       isRequired: true,
       imageUrl: '/images/modules/modulo-historia.jpg'
     },
-    // O conteúdo da timeline agora vive na página `HistoryPage`, o quiz fica aqui.
-    content: [],
+    content: [], // Conteúdo visual agora está na página HistoryPage.tsx
     quiz: [
         { order: 1, question: 'Qual foi o marco inicial da história da Faculdade de Medicina da USP?', options: ['Criação da Fundação Rockefeller em 1915', 'Criação da Faculdade de Medicina e Cirurgia de São Paulo em 1912', 'Fundação da Universidade de São Paulo (USP) em 1934', 'Inauguração do Hospital das Clínicas em 1944'], correct: 1, explanation: 'A história começa em 1912, quando foi criada a Faculdade de Medicina e Cirurgia de São Paulo, sob a direção de Arnaldo Vieira de Carvalho. Esse foi o embrião que, anos depois, se tornaria parte da USP e daria origem ao Complexo Hospital das Clínicas.' },
         { order: 2, question: 'Em que ano foi inaugurado o Instituto do Coração (InCor)?', options: ['1976', '1977', '1978', '1982'], correct: 1, explanation: 'O InCor (Instituto do Coração) foi inaugurado em 1977, marcando um avanço importante na cardiologia e cirurgia cardíaca no Brasil. Logo em seguida, em 1978, foi criada a Fundação Zerbini (FZ), que deu suporte técnico e científico ao instituto.' },
         { order: 3, question: 'O que aconteceu com o Hospital Auxiliar de Suzano (HAS) em 2023?', options: ['Foi reinaugurado com o nome de Instituto Perdizes', 'Passou a ser administrado pela Secretaria Estadual de Saúde de São Paulo', 'Foi incorporado ao Instituto do Câncer do Estado de São Paulo (ICESP)', 'Encerrado definitivamente e demolido'], correct: 1, explanation: 'Após 63 anos de história dentro do Complexo HCFMUSP, o Hospital Auxiliar de Suzano (HAS) deixou de ser gerido pela Faculdade de Medicina/HC e passou para a Secretaria Estadual de Saúde de São Paulo, marcando uma mudança administrativa importante.' },
     ]
   },
+  // MÓDULO 2: Crachá de Identificação
   {
     id: 'cracha-identificacao',
     data: {
-      title: 'Módulo 3: Crachá de Identificação',
+      title: 'Módulo 2: Crachá de Identificação',
       description: 'Entenda a importância e as regras de uso do seu crachá profissional.',
       category: 'Normas Institucionais',
       estimatedMinutes: 5,
       points: 100,
-      order: 3,
+      order: 2, // Ordem ajustada
       isRequired: true,
       imageUrl: '/images/modules/modulo-01.jpg'
     },
@@ -74,106 +47,132 @@ const modulesData = [
     ],
     quiz: [
       { order: 1, question: 'O crachá de identificação profissional deve ser usado:', options: ['Guardado no bolso para evitar perda', 'Entregue à recepção ao final do expediente', 'Na altura do peito, visível a todos', 'Somente durante reuniões'], correct: 2, explanation: 'O crachá deve estar sempre visível na altura do peito para identificação por pacientes, porteiros e seguranças.' },
+      { order: 2, question: 'É permitido emprestar ou trocar o crachá com outro colaborador?', options: ['Sim, em casos emergenciais', 'Sim, se for do mesmo setor.', 'Não, o crachá é pessoal e intransferível.', 'Apenas com autorização verbal do gestor.'], correct: 2, explanation: 'O crachá é de uso exclusivo do titular. É proibido o empréstimo ou troca em qualquer circunstância, pois ele é um documento de identificação institucional e de controle de acesso.'},
+      { order: 3, question: 'O que deve ser feito com o crachá em caso de desligamento ou fim de contrato?', options: ['Guardá-lo como lembrança.','Entregá-lo ao Centro de Gestão de Pessoas do Instituto.' , ' Jogá-lo fora após sair.'], correct: 1, explanation: 'Em casos de desligamento ou rompimento de contrato, o crachá deve ser recolhido pelo Centro de Gestão de Pessoas.' },
     ]
   },
+  // MÓDULO 3: Uso de Sistemas Corporativos
   {
     id: 'sistemas-corporativos',
     data: {
-      title: 'Módulo 4: Uso de Sistemas Corporativos',
+      title: 'Módulo 3: Uso de Sistemas Corporativos',
       description: 'Regras para acesso e uso dos sistemas internos do HCFMUSP.',
       category: 'Tecnologia',
       estimatedMinutes: 7,
       points: 100,
-      order: 4,
+      order: 3, // Ordem ajustada
       isRequired: true,
       imageUrl: '/images/modules/modulo-02.jpg'
     },
     content: [
-        { id: 'texto-1', order: 1, title: 'Acesso aos Sistemas', type: 'text', content: 'A liberação e o acesso aos sistemas corporativos estão condicionados ao seu cadastro como colaborador, e-mail corporativo e senha. O acesso é formalizado pelo seu responsável técnico ou Centro de Gestão de Pessoas.' },
-        { id: 'texto-2', order: 2, title: 'Responsabilidade Pessoal', type: 'text', content: 'Lembre-se: seu login e senha é de uso pessoal e intransferível. A responsabilidade dos acessos e manuseio das informações devem reservar-se exclusivamente à sua atividade no HCFMUSP, conforme orientação do seu responsável técnico.' }
+        { id: 'texto-1', order: 1, title: 'Acesso aos Sistemas', type: 'text', content: 'A liberação e o acesso aos sistemas corporativos estão condicionados ao seu cadastro como colaborador, e-mail corporativo e senha (que se tornará o seu login) e às atividades que você irá exercer.' },
+        { id: 'texto-2', order: 2, title: 'Responsabilidade Pessoal', type: 'text', content: 'Os acessos se dão por meio da formalização do seu responsável técnico, mediante o seu vínculo com a Instituição, empresa contratante, ou Centro de Gestão de Pessoas do Instituto em que você irá atuar.'},
+        { id: 'texto-3', order: 3, title: 'Lembre-se', type: 'text', content: 'seu login e senha é de uso pessoal e intransferível. A responsabilidade dos acessos e manuseio das informações devem reservar-se exclusivamente à sua atividade no HCFMUSP, conforme orientação do seu responsável técnico.' },
     ],
     quiz: [
         { order: 1, question: 'O acesso aos sistemas corporativos depende de:', options: ['Solicitação verbal ao técnico responsável', 'Cadastro como colaborador, e-mail corporativo e senha', 'Qualquer login válido do HCFMUSP', 'Permissão do porteiro ou segurança'], correct: 1, explanation: 'O acesso só é liberado após cadastro formal, criação de e-mail e senha pessoal vinculada à sua função.' },
+        { order: 2, question: 'O que fazer em caso de dúvidas sobre acesso aos sistemas corporativos?', options: ['Procurar ajuda de outro colaborador.', 'Tentar acessar com outro login.', 'Entrar em contato com o Centro de Gestão de Pessoas do Instituto.', 'Criar uma nova conta pessoal para uso temporário.'], correct: 2, explanation: 'Em caso de dúvidas ou problemas de acesso, o colaborador deve procurar o Centro de Gestão de Pessoas do Instituto onde atua, responsável por orientar e regularizar os cadastros institucionais.'},
+        { order: 3, question: 'O login e a senha corporativos podem ser compartilhados com colegas da equipe?', options: ['Sim, se for para agilizar o trabalho.', 'Apenas em casos emergenciais.', 'Não, são de uso pessoal e intransferível.', 'Somente com autorização verbal do gestor.'], correct: 2, explanation: 'O login e a senha são de uso pessoal e intransferível. Cada colaborador é responsável pelos acessos e manuseio das informações sob sua conta, garantindo segurança e rastreabilidade no sistema.'},
+
     ]
   },
+  // MÓDULO 4: Política de Segurança da Informação
   {
     id: 'seguranca-informacao',
     data: {
-      title: 'Módulo 5: Política de Segurança da Informação',
+      title: 'Módulo 4: Política de Segurança da Informação',
       description: 'Diretrizes essenciais sobre a LGPD e o tratamento de dados na instituição.',
       category: 'Segurança',
       estimatedMinutes: 10,
       points: 100,
-      order: 5,
+      order: 4, // Ordem ajustada
       isRequired: true,
       imageUrl: '/images/modules/modulo-03.jpg'
     },
     content: [
       { id: 'texto-1', order: 1, title: 'Sua Responsabilidade com os Dados (LGPD)', type: 'text', content: 'Ajude-nos a manter a excelência na preservação de informações, de acordo com a Lei Geral de Proteção de Dados (LGPD). As informações e os ambientes tecnológicos são de exclusiva propriedade do HCFMUSP e devem ser tratadas de forma ética e sigilosa.' },
-      { id: 'texto-2', order: 2, title: 'Diretrizes Essenciais', type: 'text', content: '• Somente usuários autorizados devem possuir acesso.\n• O uso dos sistemas pode ser monitorado sem aviso prévio.\n• Os acessos obedecem ao critério de menor privilégio (acessar apenas o necessário).\n• O compartilhamento de senhas é terminantemente proibido.\n• Toda informação produzida no exercício profissional pertence ao HCFMUSP.' }
+      { id: 'texto-2', order: 2, title: 'Diretrizes Institucionais', type: 'text', content: 'Aplica-se a todos os colaboradores: concursados, estagiários, residentes, voluntários e prestadores de serviços.\n• Somente usuários autorizados devem possuir acesso às informações do HCFMUSP e de seus pacientes;\n• As informações, em formato físico ou lógico, e os ambientes tecnológicos utilizados pelos usuários são de exclusiva propriedade do HCFMUSP, não podendo ser interpretadas como de uso pessoal;\n• As informações de pacientes devem ser tratadas de forma ética e sigilosa, de acordo com as diretrizes estabelecidas pela Lei Geral de Proteção de Dados (Lei 13.709, de 14/08/2018);\n• Todos os usuários devem ter ciência de que o uso das informações e dos sistemas de informação podem ser monitorados, sem aviso prévio, e que os registros assim obtidos podem servir de evidência para a aplicação de medidas disciplinares;\n• Todos os usuários devem possuir uma identificação única, pessoal e intransferível, que seja capaz de qualificá-lo como responsável por suas ações;\n• Os acessos devem sempre obedecer ao critério de menor privilégio, no qual os usuários devem possuir somente as permissões necessárias para a execução de suas atividades;\n• Informações confidenciais, como senhas e/ou qualquer informação à qual o usuário possua acesso durante o exercício do seu cargo, devem sempre ser mantidas de forma secreta, sendo terminantemente proibido seu compartilhamento;\n• A informação deve ser utilizada de forma transparente e apenas para a finalidade para a qual foi coletada e/ou para uso estatístico, sem expor os pacientes de forma identificável, conforme a LGPD (Lei Geral de Proteção de Dados);\n• Toda informação produzida ou recebida pelos usuários como resultado da atividade profissional contratada pelo HCFMUSP pertence à referida instituição. As exceções devem ser explícitas e formalizadas em contrato entre as partes;\n• Esta Política de Segurança da Informação é obrigatória para todos os usuários, independentemente do nível hierárquico ou função no Complexo, bem como de vínculo empregatício ou prestação de serviço;\n• O não cumprimento dos requisitos previstos nesta Política de Segurança da Informação e das Normas de Segurança da Informação acarretará violação às regras internas da instituição e sujeitará o usuário às medidas administrativas e legais cabíveis.' }
     ],
     quiz: [
       { order: 1, question: 'Segundo a política institucional, quem é o dono das informações e dos sistemas utilizados?', options: ['O colaborador que os criou', 'O paciente titular dos dados', 'O HCFMUSP', 'O responsável técnico do setor'], correct: 2, explanation: 'Todo o conteúdo gerado no exercício profissional pertence ao HCFMUSP, e não ao colaborador.' },
+      { order: 2, question: 'Quem deve ter acesso às informações e sistemas do HCFMUSP?', options: ['Apenas usuários autorizados conforme suas funções;', 'Qualquer colaborador que precisar em um momento específico;', 'Somente gestores e responsáveis técnicos;','Todos os profissionais da área da saúde.'], correct: 0, explanation: 'Apenas usuários autorizados devem possuir acesso às informações do HCFMUSP, conforme suas funções e responsabilidades institucionais.'},
+      { order: 3, question: 'O compartilhamento de senhas entre colegas é permitido?', options: ['Sim, quando há confiança entre os profissionais;','Não, é terminantemente proibido;','Somente em casos emergenciais;','Apenas se autorizado verbalmente pelo gestor.'],correct: 1, explanation: 'O compartilhamento de senhas é terminantemente proibido. Cada usuário é responsável por suas ações e deve manter suas credenciais em sigilo absoluto.'},
     ]
   },
+  // MÓDULO 5: E-mail e Sistemas de Comunicação
   {
     id: 'email-sistemas',
     data: {
-      title: 'Módulo 6: E-mail e Sistemas de Comunicação',
+      title: 'Módulo 5: E-mail e Sistemas de Comunicação',
       description: 'Aprenda a usar as principais ferramentas de comunicação, como e-mail, Intranet e portais.',
       category: 'Comunicação',
-      estimatedMinutes: 10,
-      points: 100,
-      order: 6,
+      estimatedMinutes: 15,
+      points: 200,
+      order: 5, // Ordem ajustada
       isRequired: true,
       imageUrl: '/images/modules/modulo-05.jpg'
     },
     content: [
       { id: 'texto-1', order: 1, title: 'E-mail Institucional', type: 'text', content: 'Seu e-mail @hc.fm.usp.br é a principal ferramenta de comunicação. É uma conta corporativa que pode ser monitorada e deve ser usada apenas para atividades profissionais. Sua senha é pessoal e intransferível.' },
-      { id: 'texto-2', order: 2, title: 'Intranet e Portal do Colaborador', type: 'text', content: 'A **Intranet** contém documentos e informações oficiais, com acesso restrito à rede do HCFMUSP. O **Portal do Colaborador** é onde você acessa suas informações profissionais.' },
+      { id: 'texto-2', order: 2, title: 'Diretrizes Institucionais para o bom uso do e-mail', type: 'text', content: 'A conta deste e-mail é corporativa e poderá ser monitorada a qualquer momento.\n• Use-a apenas para atividades relacionadas com a sua atividade no HC.\n• A sua senha é pessoal, intransferível e de sua total responsabilidade.\n• Para alterações e atualizações no seu e-mail, consulte o Centro de Gestão de Pessoas do seu Instituto de atuação sobre o fluxo pertinente.'},
+      { id: 'texto-3', order: 3, title: 'A Intranet, você acessa somente quando estiver no HCFMUSP', type: 'text', content: 'A Intranet do HCFMUSP contém informações sobre a estrutura organizacional, processos e a publicação de documentos oficiais que regulamentam os serviços.' },
+      { id: 'texto-4', order: 4, title: 'Portal do Colaborador, Gestor e Operador', type: 'text', content: 'Por meio deste portal, você, seu gestor e o Centros de Gestão de Pessoas do seu Instituto de atuação tem acesso às suas informações profissionais. Ainda estamos em implantação, porém alguns processos dos colaboradores HC já estão sendo realizados por meio dele. É muito importante que você esteja atento(a) às comunicações via e-mail para acompanhar as fases de implantação.' },
+      { id: 'texto-5', order: 5, title: 'GLPI - Sistema de Chamados Internos (TI - Corporativo )', type: 'text', content: 'Por meio deste sistema, você poderá requisitar ao Núcleo de Tecnologia e Informação (NETi) a liberação de acessos, manutenção e soluções de problemas com sistemas e equipamentos.'},
+      { id: 'texto-6', order: 6, title: 'GLPI - Sistema de Chamados Internos (Fale com o RH - Corporativo )', type: 'text', content: 'Por meio deste sistema, você poderá registrar dúvidas, elogios, reclamações e sugestões para o seu RH local. A gestão estratégica deste canal é realizada pelo Núcleo de Gestão de Pessoas, para garantir a atualização das informações e oportunidades de melhorias nos processos relacionados à Pessoas.'},
     ],
     quiz: [
       { order: 1, question: 'A Intranet do HCFMUSP pode ser acessada:', options: ['De qualquer local, sem restrições', 'Apenas quando o colaborador estiver no HCFMUSP', 'Somente por gestores', 'Apenas pelo celular'], correct: 1, explanation: 'A Intranet é um sistema interno, acessível somente dentro da rede do HCFMUSP.' },
+      { order: 2, question: 'O e-mail institucional do HCFMUSP deve ser usado para:', options:['Qualquer tipo de comunicação pessoal ou profissional' , 'Apenas atividades relacionadas às suas funções no HC' , 'Compartilhar informações externas e pessoais' , 'Divulgar eventos não institucionais'], correct: 2, explanation: 'O e-mail institucional é corporativo e pode ser monitorado. Deve ser usado exclusivamente para fins profissionais e relacionados às atividades do HC.'},
+      { order: 3, question: 'Onde você pode encontrar informações sobre estrutura organizacional, processos e documentos oficiais do HCFMUSP?', options:['No Portal do Colaborador', 'No GLPI/RH', 'Na Intranet', 'No e-mail institucional'], correct: 2, explanation: 'A Intranet é o espaço para acessar informações institucionais e documentos oficiais, disponível apenas dentro do HCFMUSP.'},
+      { order: 4, question: 'Qual sistema deve ser utilizado para solicitar suporte de tecnologia, como manutenção e acessos?', options: [ 'Portal do Colaborador', 'GLPI/TI (Corporativo)' , 'GLPI/RH (Corporativo)' , 'E-mail institucional'], correct: 1, explanation: 'O GLPI/TI é o sistema usado para abrir chamados técnicos relacionados a tecnologia, sistemas e equipamentos.'},
+      { order: 5, question: 'O Portal do Colaborador serve para:', options:[ 'Solicitar suporte técnico',  'Acompanhar informações profissionais e processos de RH' , 'Publicar documentos oficiais', 'Atualizar informações da Intranet'], correct: 1, explanation: 'O Portal do Colaborador, Gestor e Operador permite que você e o setor de gestão de pessoas acompanhem dados profissionais e processos de RH, que estão sendo implantados gradualmente.'},
     ]
   },
-    {
+  // MÓDULO 6: Serviço Voluntário
+  {
     id: 'servico-voluntario',
     data: {
-      title: 'Módulo 7: Serviço Voluntário',
+      title: 'Módulo 6: Serviço Voluntário',
       description: 'Entenda as regras e diretrizes para a atuação como voluntário no HCFMUSP.',
       category: 'Normas Institucionais',
-      estimatedMinutes: 8,
-      points: 100,
-      order: 7,
+      estimatedMinutes: 10,
+      points: 50,
+      order: 6, // Ordem ajustada
       isRequired: true,
       imageUrl: '/images/modules/modulo-04.jpg'
     },
     content: [
-      { id: 'texto-1', order: 1, title: 'O Que É o Serviço Voluntário?', type: 'text', content: 'É uma atividade espontânea e não remunerada, que não gera vínculo empregatício. O voluntário pode atuar em áreas de assistência, apoio, pesquisa, práticas integrativas, ações ecumênicas (CARE) ou sociais (AVOHC).' },
-      { id: 'texto-2', order: 2, title: 'Principais Diretrizes', type: 'text', content: '• O período mínimo de atuação é maior que 30 dias.\n• É vedado ao voluntário substituir profissionais efetivos ou exercer cargos de liderança.\n• Profissionais com vínculo celetista (HC ou Fundações) não podem exercer serviço voluntário.\n• O voluntário recebe um crachá corporativo após a celebração do Termo de Adesão.' }
+      { id: 'texto-1', order: 1, title: 'O Que É o Serviço Voluntário?', type: 'text', content: 'Considera-se o serviço voluntário a atividade espontânea não remunerada prestada ao HCFMUSP por pessoa física, maior e capaz, não gerando vínculo empregatício, nem obrigação de natureza trabalhista, previdenciária ou a fim.' },
+      { id: 'texto-2', orde: 2, title: 'O voluntário pode ser classificado:', type: 'text', content: '• Profissional da área da saúde;\n• Profissional da área não assistencial;\n• Profissional vinculado à Projeto de Pesquisa;\n• Profissionais de práticas integrativas e complementares em saúde.\n• Ações Ecumênicas - CARE.\n• Ações Socais - AVOHC. '},   
+      { id: 'texto-3', order: 3, title: 'Diretrizes Institucionais', type: 'text', content: '• O período mínimo de atuação é maior que 30 dias.\n• O VOLUNTÁRIO poderá atuar no âmbito do HCFMUSP, em atividades de assistência, de apoio (não assistencial), de pesquisa, praticas integrativas e complementares em saúde, ecumênicas (religiosas) ou sociais.\n •O VOLUNTÁRIO de assistência ou de pesquisa deverá ter a anuência do Responsável Técnico por sua categoria profissional e do dirigente da unidade/pesquisador responsável do local onde pretende atuar.\n•O VOLUNTÁRIO de pesquisa deverá ser regulados pela ordem de serviço, ainda que sejam pesquisadores bolsistas por Instituição de Fomento.\n•O serviço voluntário não equivale e nem substitui os estágios de graduação ou pós-graduação lato sensu, stricto sensu ou cursos de extensão universitária, sendo vedada a emissão de atestados, certificados ou declarações a esse título.\n• \n•É vedado ao voluntário substituir profissionais efetivos ou exercer cargos de liderança.\n• Profissionais com vínculo celetista (HC ou Fundações) não podem exercer serviço voluntário.\n• O voluntário recebe um crachá corporativo após a celebração do Termo de Adesão.' },
+      { id: 'texto-4', order: 4, title: 'Cabe aos Voluntários', type: 'text', content: '• O cumprimento dos compromissos assumidos como VOLUNTÁRIO com a área, sendo assíduo e pontual nos dias definidos para o serviço voluntário.\n Justificar ausências.\n Manter atualizado endereço, e-mail e telefone de contato.\n Comunicar à área com antecedência em casos de afastamento ou desligamento para  fins de bloqueio de acessos.\n Entregar semestralmente relatório de atividades para o Responsável Técnico da categoria profissional e para o Dirigente/Pesquisador Responsável da área de atuação.'},
+      { id: 'texto-5', order: 5, title: 'Cabe ao Responsável Técnico da categoria profissional do voluntário e ao Dirigente da Unidade onde o voluntário realizará suas atividades:', type: 'text', content: 'Estabelecer o Plano de Trabalho das atividades que serão exercidas.\n Definir carga horária, jornada semanal e período da atividade do VOLUNTÁRIO.\n Especificar a área em que o profissional irá atuar, para fins de classificação de centro de custo.\n Informar a especialização do profissional assistencial para fins de identificação de CBO.\n Manifestar-se anualmente quanto à permanência do VOLUNTÁRIO, no caso de prorrogação do período de sua atividade por mais um ano.\n Comunicar imediatamente o fim do serviço antes do encerramento do Termo de adesão e recolhimento do crachá corporativo.\n Acompanhar as atividades realizadas pelo voluntário por meio de relatório de acompanhamento trimestral.\n Responsabilizar-se pelas atividades e ações do Voluntário.'},
+
     ],
     quiz: [
         { order: 1, question: 'O serviço voluntário no HCFMUSP é:', options: ['Uma forma de estágio remunerado', 'Uma atividade espontânea e não remunerada', 'Um contrato de trabalho temporário', 'Uma bolsa de pesquisa obrigatória'], correct: 1, explanation: 'O voluntariado não gera vínculo trabalhista nem remuneração.' },
     ]
   },
+  // CARD BÔNUS HCX (NO FINAL)
   {
     id: 'hcx-plataforma',
     data: {
-      title: 'Módulo 8: HCX - Cursos Obrigatórios',
+      title: 'HCX - Cursos Obrigatórios',
       description: 'Acesse a plataforma de cursos e desenvolvimento do HCFMUSP para seus treinamentos obrigatórios.',
       category: 'Desenvolvimento',
-      estimatedMinutes: 5,
-      points: 50,
-      order: 8,
-      isRequired: false, // Módulo Opcional
+      estimatedMinutes: 2,
+      points: 0,
+      order: 7, // Ordem ajustada
+      isRequired: false,
       imageUrl: '/images/modules/modulo-hcx.jpg',
-      url: 'https://hcx.fm.usp.br/login' // Link externo
+      url: 'https://hcx.fm.usp.br/login'
     },
     content: [],
     quiz: []
   },
 ];
 
+// CONTEÚDO PARA PÁGINAS ESTÁTICAS (agora preenchido)
 const contentPagesData = [
   {
       id: 'quem-somos',
@@ -298,7 +297,7 @@ const db = admin.firestore();
 
 async function seedDatabase() {
   console.log('\n🧹 Limpando coleções...');
-  const collectionsToClear = ['modules', 'contentPages'];
+  const collectionsToClear = ['modules', 'content'];
   for (const coll of collectionsToClear) {
     await deleteCollection(db.collection(coll));
     console.log(` -> Coleção "${coll}" limpa.`);
@@ -318,7 +317,7 @@ async function seedDatabase() {
     if (quiz?.length) {
       const batch = db.batch();
       quiz.forEach(item => {
-        const docRef = moduleRef.collection('quiz').doc(); // Auto-generate ID
+        const docRef = moduleRef.collection('quiz').doc();
         batch.set(docRef, item);
       });
       await batch.commit();
@@ -326,11 +325,11 @@ async function seedDatabase() {
   }
   console.log(` -> ${modulesData.length} módulos populados.`);
   
-  console.log('\n📝 Populando coleção "contentPages"...');
+  console.log('\n📝 Populando coleção "content"...');
   const contentPagesBatch = db.batch();
   for (const page of contentPagesData) {
       const { id, data } = page;
-      contentPagesBatch.set(db.collection('contentPages').doc(id), data);
+      contentPagesBatch.set(db.collection('content').doc(id), data);
   }
   await contentPagesBatch.commit();
   console.log(` -> ${contentPagesData.length} páginas de conteúdo populadas.`);
@@ -339,26 +338,25 @@ async function seedDatabase() {
 }
 
 async function deleteCollection(collectionRef, batchSize = 100) {
-  const query = collectionRef.limit(batchSize);
-  
-  while (true) {
-    const snapshot = await query.get();
-    if (snapshot.size === 0) {
-      break;
-    }
-
-    const batch = collectionRef.firestore.batch();
-    for (const doc of snapshot.docs) {
-      // Recursivamente deleta subcoleções
-      const subcollections = await doc.ref.listCollections();
-      for (const subcollection of subcollections) {
-        await deleteCollection(subcollection, batchSize);
+    const query = collectionRef.limit(batchSize);
+    
+    while (true) {
+      const snapshot = await query.get();
+      if (snapshot.size === 0) {
+        break;
       }
-      batch.delete(doc.ref);
+  
+      const batch = collectionRef.firestore.batch();
+      for (const doc of snapshot.docs) {
+        const subcollections = await doc.ref.listCollections();
+        for (const subcollection of subcollections) {
+          await deleteCollection(subcollection, batchSize);
+        }
+        batch.delete(doc.ref);
+      }
+      await batch.commit();
     }
-    await batch.commit();
   }
-}
 
 seedDatabase().catch((err) => {
   console.error('💥 ERRO CRÍTICO durante a execução do script:', err);

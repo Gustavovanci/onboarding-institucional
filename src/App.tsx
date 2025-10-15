@@ -1,5 +1,5 @@
 // src/App.tsx
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useModulesStore } from "@/stores/modulesStore";
@@ -17,7 +17,7 @@ import ModulePage from "@/pages/ModulePage";
 import ModulesGridPage from "@/pages/ModulesGridPage";
 import RankingPage from "@/pages/RankingPage";
 import ProfilePage from "@/pages/ProfilePage";
-import SettingsPage from "@/pages/SettingsPage"; // Importado
+import SettingsPage from "@/pages/SettingsPage";
 import QuizPage from "@/pages/QuizPage";
 import CertificatesPage from "@/pages/CertificatesPage";
 import BenefitsPage from "@/pages/BenefitsPage";
@@ -25,7 +25,13 @@ import CommunicationPage from "@/pages/CommunicationPage";
 import InnovationPage from "@/pages/InnovationPage";
 import MessagesPage from "@/pages/MessagesPage";
 import HistoryPage from "@/pages/HistoryPage";
-import ContentPage from "@/pages/ContentPage"; // Importado para páginas genéricas
+import ContentPage from "@/pages/ContentPage";
+
+// NOVAS PÁGINAS DO FLUXO DE BOAS-VINDAS
+import BoasVindasPage from "@/pages/BoasVindasPage";
+import NossoPapelSusPage from "@/pages/NossoPapelSusPage";
+import BoasVindasQuizPage from "@/pages/BoasVindasQuizPage";
+
 
 function App() {
   const { isLoading: isAuthLoading, isAuthenticated, initializeAuthListener } = useAuthStore();
@@ -63,6 +69,14 @@ function App() {
           <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetupPage /></ProtectedRoute>} />
           
           <Route element={<ProtectedRoute><ProfileCheck /></ProtectedRoute>}>
+            <Route path="/inicio" element={<Navigate to="/dashboard" replace />} />
+            
+            {/* ROTAS DO NOVO FLUXO DE BOAS-VINDAS */}
+            <Route path="/boas-vindas" element={<Layout><BoasVindasPage /></Layout>} />
+            <Route path="/nosso-papel-sus" element={<Layout><NossoPapelSusPage /></Layout>} />
+            <Route path="/boas-vindas/quiz" element={<BoasVindasQuizPage />} />
+
+            {/* ROTAS EXISTENTES */}
             <Route path="/dashboard" element={<Layout><DashboardPage /></Layout>} />
             <Route path="/modules" element={<Layout><ModulesGridPage /></Layout>} />
             <Route path="/modules/nossa-historia" element={<Layout><HistoryPage /></Layout>} />
@@ -84,7 +98,7 @@ function App() {
               <div>
                 <h1 className="text-4xl font-bold">404 - Página não encontrada</h1>
                 <p className="text-gray-500 mt-2">O endereço que você tentou acessar não existe.</p>
-                <a href="/" className="btn-primary mt-6">Voltar ao Início</a>
+                <Link to="/" className="btn-primary mt-6">Voltar ao Início</Link>
               </div>
             </div>
           } />

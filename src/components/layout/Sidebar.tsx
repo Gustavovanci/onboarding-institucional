@@ -1,12 +1,11 @@
 // src/components/layout/Sidebar.tsx
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { Home, User, TrendingUp, BookOpen, Gift, MessageSquare, Zap, Award, Menu, X, Clock } from 'lucide-react';
+import { Home, User, TrendingUp, BookOpen, Gift, MessageSquare, Zap, Award, Menu, X, Clock, Heart, Cloud } from 'lucide-react'; // Ícone 'Cloud' adicionado
 import { INSTITUTOS_CONFIG } from '../../types';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-// Níveis com nomes e ícones
 const levelNames = [
   { name: 'Aprendiz HC', icon: '🧑‍🎓' },
   { name: 'Iniciado HC', icon: '📝' },
@@ -19,9 +18,12 @@ const levelNames = [
 
 const navigation = [
   { name: 'Início', href: '/dashboard', icon: Home },
-  { name: 'Institucional', href: '/modules', icon: BookOpen },
+  { name: 'Boas-Vindas', href: '/boas-vindas', icon: Heart },
+  { name: 'Trilha Institucional', href: '/modules', icon: BookOpen },
   { name: 'Certificados', href: '/certificates', icon: Award },
   { name: 'Ranking', href: '/ranking', icon: TrendingUp },
+  // CORREÇÃO: "Nuvem de Ideias" foi adicionado de volta
+  { name: 'Nuvem de Ideias', href: '/messages', icon: Cloud },
   { name: 'Benefícios', href: '/benefits', icon: Gift },
   { name: 'Comunicação', href: '/communication', icon: MessageSquare },
   { name: 'Inova HC', href: '/innovation', icon: Zap },
@@ -38,9 +40,7 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
   const pointsForCurrentLevel = (user?.points || 0) % 1000;
   const progressToNextLevel = (pointsForCurrentLevel / 1000) * 100;
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <div className="flex flex-col w-64 h-full bg-white/95 backdrop-blur-xl border-r border-gray-200/50">
@@ -81,7 +81,7 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
           <NavLink
             key={item.name}
             to={item.href}
-            end={item.href === '/dashboard'}
+            end={item.href === '/dashboard' || item.href === '/boas-vindas'}
             onClick={onLinkClick}
             className={({ isActive }) =>
               `group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${

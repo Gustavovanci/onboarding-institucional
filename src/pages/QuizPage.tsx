@@ -1,5 +1,5 @@
 // src/pages/QuizPage.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { collection, getDocs, query, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
@@ -29,8 +29,8 @@ export default function QuizPage() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { modules } = useModulesStore(); // Obter a lista de todos os módulos
-  const { completeModule, isLoading: isProgressLoading } = useProgressStore();
+  const { modules } = useModulesStore();
+  const { completeModule, markOnboardingAsCompleted, isLoading: isProgressLoading } = useProgressStore();
   
   const [questions, setQuestions] = useState<QuizItem[]>([]);
   const [moduleData, setModuleData] = useState<ModuleData | null>(null);
@@ -39,6 +39,32 @@ export default function QuizPage() {
   const [quizFinished, setQuizFinished] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+
+  const handleCompleteModule = useCallback(async (passed: boolean) => {
+    if (!user || !moduleData || !moduleId || !passed) return;
+    
+    const isAlreadyCompleted = user.completedModules.includes(moduleId);
+    
+    if (!isAlreadyCompleted) {
+      await completeModule(user.uid, { id: moduleId, points: moduleData.points, isRequired: moduleData.isRequired });
+    }
+    
+    // Adiciona um delay para garantir que o estado do usuário na authStore seja atualizado antes da verificação.
+    setTimeout(() => {
+        const updatedUser = useAuthStore.getState().user;
+        if (!updatedUser) return;
+
+        const requiredModules = modules.filter(m => m.isRequired);
+        if (requiredModules.length > 0) {
+            const allRequiredCompleted = requiredModules.every(m => updatedUser.completedModules.includes(m.id));
+            
+            if (allRequiredCompleted && !updatedUser.onboardingCompleted) {
+              markOnboardingAsCompleted(user.uid);
+              setShowFeedbackModal(true);
+            }
+        }
+    }, 500);
+  }, [user, moduleData, moduleId, completeModule, modules, markOnboardingAsCompleted]);
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -64,31 +90,6 @@ export default function QuizPage() {
     fetchQuiz();
   }, [moduleId]);
 
-  const handleCompleteModule = async (passed: boolean) => {
-    if (!user || !moduleData || !moduleId || !passed) return;
-    
-    const isAlreadyCompleted = user.completedModules.includes(moduleId);
-    
-    // Cria uma cópia para simular a conclusão do módulo atual
-    const prospectiveCompleted = new Set(user.completedModules);
-    if (!isAlreadyCompleted) {
-        prospectiveCompleted.add(moduleId);
-    }
-    
-    if (!isAlreadyCompleted) {
-      await completeModule(user.uid, { id: moduleId, points: moduleData.points, isRequired: moduleData.isRequired });
-    }
-    
-    // PONTO 3: Verifica se todos os módulos obrigatórios foram concluídos
-    const requiredModules = modules.filter(m => m.isRequired);
-    if (requiredModules.length > 0) {
-        const allRequiredCompleted = requiredModules.every(m => prospectiveCompleted.has(m.id));
-        if (allRequiredCompleted) {
-          setShowFeedbackModal(true); // Abre o modal de feedback
-        }
-    }
-  };
-  
   const handleAnswer = (optionIndex: number) => {
     if (answers[currentQuestionIndex] !== null) return;
     const newAnswers = [...answers];
@@ -103,19 +104,18 @@ export default function QuizPage() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       setQuizFinished(true);
-      const score = [...answers, answers[currentQuestionIndex]].reduce((acc, answer, index) => (answer === questions[index]?.correct ? acc + 1 : acc), 0);
+      const score = answers.reduce((acc, answer, index) => (answer === questions[index]?.correct ? acc + 1 : acc), 0);
       const percentage = questions.length > 0 ? (score / questions.length) * 100 : 100;
       handleCompleteModule(percentage >= 70);
     }
   };
 
   useEffect(() => {
-    // Lida com módulos que não têm quiz
     if (!isLoading && questions.length === 0 && !quizFinished) {
       setQuizFinished(true);
-      handleCompleteModule(true); // Considera como "passou"
+      handleCompleteModule(true);
     }
-  }, [isLoading, questions, quizFinished]);
+  }, [isLoading, questions, quizFinished, handleCompleteModule]);
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>;
@@ -130,7 +130,7 @@ export default function QuizPage() {
       <>
         <FeedbackModal isOpen={showFeedbackModal} onClose={() => {
             setShowFeedbackModal(false);
-            navigate('/modules'); // Navega para os módulos após fechar o feedback
+            navigate('/modules');
         }} />
         <div
           className="min-h-screen flex items-center justify-center p-4 bg-gray-50"
@@ -165,7 +165,6 @@ export default function QuizPage() {
               )}
                <button 
                   onClick={() => {
-                    // Se o modal de feedback não for exibido, navega imediatamente
                     if(!showFeedbackModal) navigate('/modules');
                   }} 
                   className="btn-primary w-full"
@@ -181,6 +180,10 @@ export default function QuizPage() {
 
   const question = questions[currentQuestionIndex];
   
+  if (!question) {
+    return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>;
+  }
+
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 bg-gray-50"
