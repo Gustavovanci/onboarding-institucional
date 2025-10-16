@@ -44,13 +44,14 @@ export default function CertificatesPage() {
 
           let moduleData: Module | null = null;
 
+          // ✅ CORREÇÃO: Lida com o certificado de conclusão da trilha
           if (certData.moduleId === "trilha-institucional-completa") {
             moduleData = {
               id: "trilha-institucional-completa",
               title: "Conclusão da Trilha Institucional",
               description:
                 "Certificado concedido pela conclusão de todos os módulos obrigatórios da trilha de integração do HCFMUSP.",
-              estimatedMinutes: 120,
+              estimatedMinutes: 120, // Pode ser um valor estimado
               order: 999,
               points: 0,
               category: "Geral",
@@ -77,6 +78,7 @@ export default function CertificatesPage() {
 
     return () => unsubscribe();
   }, [user?.uid]);
+
 
   if (isLoading) {
     return (

@@ -1,35 +1,81 @@
 // src/stores/progressStore.ts
 import { create } from "zustand";
-import { type Badge, type User, type Module } from "../types";
+import { type Badge, type User, type Module, type OnboardingFeedback, type CompletionDetails } from "../types";
 import { doc, updateDoc, arrayUnion, increment, collection, addDoc, serverTimestamp, setDoc, getDocs } from "firebase/firestore";
 import { db } from "../utils/firebase";
 import { useAuthStore } from "./authStore";
 import { useModulesStore } from "./modulesStore";
 import { differenceInDays } from "date-fns";
 import { v4 as uuidv4 } from 'uuid';
+import { LEVELS } from "@/config/gamification";
 
 export const availableBadges: Badge[] = [
   { id: "checkin-hc", name: "Iniciante HC", description: "Concluiu a jornada de boas-vindas e fez seu check-in na plataforma.", icon: "✅", category: "special", points: 100 },
   { id: "first-module", name: "Primeiro Passo", description: "Complete seu primeiro módulo da trilha institucional", icon: "🎯", category: "completion", points: 50 },
-  { id: "onboarding-sprint", name: "Maratonista", description: "Conclua o onboarding em menos de 5 dias", icon: "🏃‍♂️", category: "special", points: 200 },
+  { id: "onboarding-sprint", name: "Maratonista", description: "Concluiu o onboarding em 7 dias ou menos.", icon: "🏃‍♂️", category: "special", points: 250 },
+  { id: "mago-hc", name: "Mago HC", description: "Atingiu o nível máximo de conhecimento no Onboarding.", icon: "🧙‍♂️", category: "special", points: 0 },
 ];
 
 interface ProgressState {
   isLoading: boolean;
+  runRetroactiveChecks: (user: User) => Promise<void>;
   completeModule: (userId: string, module: { id: string; points: number; isRequired: boolean }) => Promise<boolean>;
-  checkAndAwardBadges: (user: User) => Promise<void>;
   addFeedback: (feedback: { userId: string; rating: number; message: string }) => Promise<void>;
-  awardBadgeAndPoints: (userId: string, badgeId: string) => Promise<void>;
   markOnboardingAsCompleted: (userId: string) => Promise<void>;
 }
 
 export const useProgressStore = create<ProgressState>((set, get) => ({
   isLoading: false,
 
+  runRetroactiveChecks: async (user: User) => {
+    const { updateUserProfile } = useAuthStore.getState();
+    const badgesToAward: Badge[] = [];
+
+    // Verificação 1: Badge "Mago HC"
+    const maxLevel = LEVELS[LEVELS.length - 1];
+    if (user.points >= maxLevel.minPoints && !user.badges.includes('mago-hc')) {
+      const magoBadge = availableBadges.find(b => b.id === 'mago-hc');
+      if (magoBadge) badgesToAward.push(magoBadge);
+    }
+
+    // Verificação 2: Badge "Maratonista"
+    if (user.onboardingCompleted && !user.badges.includes('onboarding-sprint')) {
+      // ✅ GARANTIA: Verifica se o campo completionDetails existe no objeto do usuário
+      if (user.completionDetails && user.completionDetails.daysToComplete <= 7) {
+        const sprintBadge = availableBadges.find(b => b.id === 'onboarding-sprint');
+        if (sprintBadge) badgesToAward.push(sprintBadge);
+      }
+    }
+
+    if (badgesToAward.length > 0) {
+      const badgeIdsToAdd = badgesToAward.map(b => b.id);
+      const pointsToAdd = badgesToAward.reduce((sum, b) => sum + b.points, 0);
+
+      const userRef = doc(db, 'users', user.uid);
+      const firestoreUpdate: { [key: string]: any } = {
+        badges: arrayUnion(...badgeIdsToAdd),
+      };
+      if (pointsToAdd > 0) {
+        firestoreUpdate.points = increment(pointsToAdd);
+      }
+      
+      try {
+        await updateDoc(userRef, firestoreUpdate);
+
+        const newBadges = [...new Set([...user.badges, ...badgeIdsToAdd])];
+        const newPoints = user.points + pointsToAdd;
+        // ✅ ATUALIZAÇÃO ROBUSTA: Passa um objeto completo para o Zustand
+        updateUserProfile({ ...user, badges: newBadges, points: newPoints });
+      } catch (error) {
+        console.error("Erro ao conceder badges retroativamente:", error);
+      }
+    }
+  },
+
   completeModule: async (userId, module) => {
+    // ...código existente...
     set({ isLoading: true });
     let onboardingCompletedNow = false;
-
     try {
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, {
@@ -37,146 +83,69 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         points: increment(module.points),
         lastAccess: serverTimestamp(),
       });
-
       const { user, updateUserProfile } = useAuthStore.getState();
-
       if (user) {
-        // Atualiza o usuário localmente
-        const updatedUser: User = {
-          ...user,
-          points: user.points + module.points,
-          completedModules: [...new Set([...user.completedModules, module.id])],
-        };
+        const updatedUser = { ...user, points: user.points + module.points, completedModules: [...new Set([...user.completedModules, module.id])] };
         updateUserProfile(updatedUser);
-
-        await get().checkAndAwardBadges(updatedUser);
-
-        // 🔍 Carrega módulos obrigatórios (garante que realmente estejam disponíveis)
-        let allModules: Module[] = useModulesStore.getState().modules;
-        if (!allModules || allModules.length === 0) {
-          const snapshot = await getDocs(collection(db, "modules"));
-          allModules = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as Module[];
-        }
-
+        
+        await get().runRetroactiveChecks(updatedUser);
+        
+        const allModules = useModulesStore.getState().modules;
         const requiredModules = allModules.filter((m) => m.isRequired);
-
         if (requiredModules.length > 0) {
-          const allRequiredCompleted = requiredModules.every((m) =>
-            updatedUser.completedModules.includes(m.id)
-          );
-
+          const allRequiredCompleted = requiredModules.every((m) => updatedUser.completedModules.includes(m.id));
           if (allRequiredCompleted && !updatedUser.onboardingCompleted) {
             await get().markOnboardingAsCompleted(userId);
             onboardingCompletedNow = true;
           }
         }
       }
-    } catch (error) {
-      console.error("Erro ao completar módulo:", error);
-    } finally {
-      set({ isLoading: false });
-    }
-
+    } catch (error) { console.error("Erro ao completar módulo:", error); } 
+    finally { set({ isLoading: false }); }
     return onboardingCompletedNow;
   },
 
   markOnboardingAsCompleted: async (userId: string) => {
+    // ...código existente...
     const { user, updateUserProfile } = useAuthStore.getState();
     if (!user || user.onboardingCompleted) return;
-
     set({ isLoading: true });
     try {
       const completionTime = Date.now();
       const daysToComplete = differenceInDays(completionTime, new Date(user.createdAt));
-      const earnedSprintBadge = daysToComplete <= 5;
-
-      const firestoreUpdate: Record<string, any> = {
-        onboardingCompleted: true,
-        certificateIssued: true,
-        lastAccess: serverTimestamp(),
-      };
-
+      const earnedSprintBadge = daysToComplete <= 7;
+      const completionDetails: CompletionDetails = { completedAt: completionTime, daysToComplete, wasOverdue: daysToComplete > 30 };
+      const firestoreUpdate: Record<string, any> = { onboardingCompleted: true, completionDetails, lastAccess: serverTimestamp() };
+      let localPointsUpdate = user.points;
+      let localBadgesUpdate = [...user.badges];
       if (earnedSprintBadge) {
         const sprintBadge = availableBadges.find((b) => b.id === "onboarding-sprint")!;
         firestoreUpdate.badges = arrayUnion(sprintBadge.id);
         firestoreUpdate.points = increment(sprintBadge.points);
+        localPointsUpdate += sprintBadge.points;
+        localBadgesUpdate.push(sprintBadge.id);
       }
-
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, firestoreUpdate);
-
-      // 🔖 Cria certificado
       const certRef = doc(collection(db, "certificates"));
-      await setDoc(certRef, {
-        userId: user.uid,
-        moduleId: "trilha-institucional-completa",
-        moduleTitle: "Conclusão da Trilha Institucional",
-        completionDate: completionTime,
-        certificateNumber: uuidv4(),
-      });
-
-      const updatedLocalUser: Partial<User> = {
-        onboardingCompleted: true,
-        certificateIssued: true,
-        lastAccess: completionTime,
-      };
-
-      if (earnedSprintBadge) {
-        const sprintBadge = availableBadges.find((b) => b.id === "onboarding-sprint")!;
-        updatedLocalUser.badges = [...user.badges, sprintBadge.id];
-        updatedLocalUser.points = user.points + sprintBadge.points;
-      }
-
-      updateUserProfile(updatedLocalUser);
-    } catch (error) {
-      console.error("Erro ao marcar onboarding como concluído:", error);
-    } finally {
-      set({ isLoading: false });
-    }
+      await setDoc(certRef, { userId: user.uid, moduleId: "trilha-institucional-completa", moduleTitle: "Conclusão da Trilha Institucional", completionDate: completionTime, certificateNumber: uuidv4() });
+      updateUserProfile({ onboardingCompleted: true, completionDetails, points: localPointsUpdate, badges: localBadgesUpdate });
+    } catch (error) { console.error("Erro ao marcar onboarding como concluído:", error); } 
+    finally { set({ isLoading: false }); }
   },
 
   addFeedback: async (feedback) => {
+    // ...código existente...
     set({ isLoading: true });
     try {
-      await addDoc(collection(db, "feedback"), {
-        ...feedback,
-        createdAt: serverTimestamp(),
-      });
-
-      const userRef = doc(db, "users", feedback.userId);
-      await updateDoc(userRef, { feedbackSubmitted: true });
-
-      useAuthStore.getState().updateUserProfile({ feedbackSubmitted: true });
-    } catch (error) {
-      console.error("Erro ao adicionar feedback:", error);
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  checkAndAwardBadges: async (user: User) => {
-    const firstModuleBadge = availableBadges.find((b) => b.id === "first-module")!;
-    if (user.completedModules.length >= 1 && !user.badges.includes(firstModuleBadge.id)) {
-      await get().awardBadgeAndPoints(user.uid, firstModuleBadge.id);
-    }
-  },
-
-  awardBadgeAndPoints: async (userId, badgeId) => {
-    const { user, updateUserProfile } = useAuthStore.getState();
-    if (!user || user.badges.includes(badgeId)) return;
-
-    const badge = availableBadges.find((b) => b.id === badgeId);
-    if (!badge) return;
-
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, {
-      badges: arrayUnion(badge.id),
-      points: increment(badge.points),
-    });
-
-    updateUserProfile({
-      badges: [...user.badges, badge.id],
-      points: user.points + badge.points,
-    });
+      const { userId, rating, message } = feedback;
+      const feedbackTime = Date.now();
+      await addDoc(collection(db, "feedback"), { ...feedback, createdAt: serverTimestamp() });
+      const userFeedbackData: OnboardingFeedback = { rating, message, submittedAt: feedbackTime };
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, { onboardingFeedback: userFeedbackData });
+      useAuthStore.getState().updateUserProfile({ onboardingFeedback: userFeedbackData });
+    } catch (error) { console.error("Erro ao adicionar feedback:", error); } 
+    finally { set({ isLoading: false }); }
   },
 }));

@@ -58,7 +58,7 @@ export const CertificateTemplate = ({ certificate, user, module }: CertificateTe
 );
 
 // ==================================================================
-// == A CORREÇÃO ESTÁ AQUI: A PALAVRA 'export' É ESSENCIAL ==
+// == ✅ A CORREÇÃO ESTÁ AQUI: A PALAVRA 'export' É ESSENCIAL ==
 // ==================================================================
 export const useCertificateGenerator = () => {
   const generatePDF = async (certificate: Certificate, user: User, module: Module) => {

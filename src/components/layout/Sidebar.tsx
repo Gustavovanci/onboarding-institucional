@@ -5,18 +5,7 @@ import { Home, User, TrendingUp, BookOpen, Gift, MessageSquare, Zap, Award, Menu
 import { INSTITUTOS_CONFIG } from '../../types';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-
-// CORREÇÃO: Nova estrutura de níveis com pontuação mínima
-const LEVELS = [
-  { level: 1, name: 'Aprendiz HC', icon: '🧑‍🎓', minPoints: 0 },
-  { level: 2, name: 'Iniciado HC', icon: '📝', minPoints: 150 },
-  { level: 3, name: 'Explorador HC', icon: '🧭', minPoints: 250 },
-  { level: 4, name: 'Veterano HC', icon: '🛡️', minPoints: 350 },
-  { level: 5, name: 'Especialista HC', icon: '⭐', minPoints: 450 },
-  { level: 6, name: 'Mestre HC', icon: '🏆', minPoints: 550 },
-  { level: 7, name: 'Guardião HC', icon: '👑', minPoints: 650 },
-  { level: 8, name: 'Mago HC', icon: '🧙‍♂️', minPoints: 950 },
-];
+import { LEVELS } from '@/config/gamification';
 
 const navigation = [
   { name: 'Início', href: '/dashboard', icon: Home },
@@ -32,12 +21,11 @@ const navigation = [
   { name: 'Meu Perfil', href: '/profile', icon: User },
 ];
 
-// CORREÇÃO: Nova função para calcular o nível e o progresso
 const calculateLevelInfo = (points: number) => {
   const currentLevel = [...LEVELS].reverse().find(l => points >= l.minPoints) || LEVELS[0];
   const nextLevel = LEVELS.find(l => l.minPoints > currentLevel.minPoints);
 
-  if (!nextLevel) { // Usuário está no nível máximo
+  if (!nextLevel) {
     return {
       currentLevel,
       nextLevel: null,
@@ -54,7 +42,7 @@ const calculateLevelInfo = (points: number) => {
   return {
     currentLevel,
     nextLevel,
-    progress: Math.min(progress, 100), // Garante que a barra não passe de 100%
+    progress: Math.min(progress, 100),
     pointsToNextLevel,
   };
 };
@@ -66,8 +54,7 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
 
   if (!user) return null;
 
-  // CORREÇÃO: Usa a nova função para obter os dados do nível
-  const { currentLevel, progress, pointsToNextLevel } = calculateLevelInfo(user.points || 0);
+  const { currentLevel, nextLevel, progress, pointsToNextLevel } = calculateLevelInfo(user.points || 0);
 
   return (
     <motion.div 
@@ -75,7 +62,6 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="flex flex-col h-full bg-white/95 backdrop-blur-xl border-r border-gray-200/50 overflow-hidden"
     >
-      {/* Header da Sidebar */}
       <div className="flex items-center justify-center h-20 px-4 border-b border-gray-200/50 flex-shrink-0">
         <div className={`flex items-center space-x-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
           <img
@@ -94,7 +80,6 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
         </div>
       </div>
 
-      {/* Card de Nível */}
       <AnimatePresence>
         {!isCollapsed && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="p-4">
@@ -110,9 +95,8 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
               </div>
               <div className="flex items-center space-x-2 text-gray-600 mt-3">
                 <Clock className="w-4 h-4 flex-shrink-0" />
-                {/* CORREÇÃO: Exibe a pontuação correta para o próximo nível */}
                 <span className="text-xs whitespace-nowrap">
-                  {pointsToNextLevel > 0 ? `${pointsToNextLevel} pts para o próximo nível` : 'Nível Máximo!'}
+                  {nextLevel ? `${pointsToNextLevel} pts para o próximo nível` : 'Nível Máximo!'}
                 </span>
               </div>
             </div>
@@ -120,7 +104,6 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
         )}
       </AnimatePresence>
 
-      {/* Navegação */}
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
         {navigation.map((item) => (
           <NavLink
@@ -149,7 +132,6 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
         ))}
       </nav>
 
-      {/* Rodapé da Sidebar */}
       <AnimatePresence>
         {!isCollapsed && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 text-center text-xs text-gray-400 flex-shrink-0">

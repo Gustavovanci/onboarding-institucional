@@ -1,7 +1,7 @@
 // src/components/dashboard/DeadlineCard.tsx
 import { useAuthStore } from '../../stores/authStore';
 import { differenceInDays } from 'date-fns';
-import { Clock, Check, AlertTriangle, PartyPopper } from 'lucide-react';
+import { Clock, AlertTriangle, PartyPopper } from 'lucide-react';
 
 export const DeadlineCard = () => {
   const { user } = useAuthStore();
@@ -10,42 +10,68 @@ export const DeadlineCard = () => {
 
   const deadlineDays = 30;
   
+  // LÓGICA DE EXIBIÇÃO APÓS A CONCLUSÃO
   if (user.onboardingCompleted) {
-    // Usamos 'lastAccess' para ter a data exata da conclusão
-    const daysToComplete = differenceInDays(new Date(user.lastAccess as number), new Date(user.createdAt));
-    const completedInSprint = daysToComplete <= 5;
+    // ✅ CORREÇÃO FINAL: A lógica agora é mais robusta e verifica as duas fontes de verdade.
+    // Primeiro, checa se o campo 'completionDetails' confirma a conclusão rápida.
+    // Depois, como fallback para usuários antigos, verifica se o badge já foi concedido.
+    const completedInSprint = 
+        (user.completionDetails && user.completionDetails.daysToComplete <= 7) || 
+        user.badges.includes('onboarding-sprint');
 
-    return (
-      <div className="card-elevated h-full bg-green-50 border-green-200">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <PartyPopper className="w-6 h-6 text-green-600" />
+    if (completedInSprint) {
+      return (
+        <div className="card-elevated h-full bg-green-50 border-green-200">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <PartyPopper className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-800">Onboarding Concluído!</h3>
+              <p className={`text-xs font-semibold text-green-700`}>
+                Você completou em tempo recorde!
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-gray-800">Onboarding Concluído!</h3>
-            <p className={`text-xs font-semibold text-green-700`}>
-              {completedInSprint ? 'Você completou em tempo recorde!' : 'Parabéns por completar sua jornada!'}
-            </p>
-          </div>
+          <p className="text-center text-sm text-gray-600">
+            Você ganhou o badge 'Maratonista' por sua agilidade. Continue explorando a plataforma!
+          </p>
         </div>
-        <p className="text-center text-sm text-gray-600">
-          {completedInSprint 
-            ? "Você ganhou o badge 'Maratonista' por sua agilidade. Continue explorando a plataforma!"
-            : "Sua jornada de integração foi finalizada com sucesso. Explore os outros recursos!"}
-        </p>
-      </div>
+      );
+    }
+    
+    // Cenário padrão para quem concluiu após 7 dias
+    return (
+        <div className="card-elevated h-full bg-green-50 border-green-200">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <PartyPopper className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-800">Onboarding Concluído!</h3>
+              <p className={`text-xs font-semibold text-green-700`}>
+                Parabéns por completar sua jornada!
+              </p>
+            </div>
+          </div>
+          <p className="text-center text-sm text-gray-600">
+            Sua jornada de integração foi finalizada com sucesso. Explore os outros recursos!
+          </p>
+        </div>
     );
   }
   
-  // Lógica para onboarding não concluído
+  // LÓGICA DE EXIBIÇÃO ANTES DA CONCLUSÃO
   const startDate = new Date(user.createdAt);
   const today = new Date();
   const daysPassed = differenceInDays(today, startDate);
   const daysRemaining = Math.max(0, deadlineDays - daysPassed);
   const isOverdue = daysRemaining === 0 && daysPassed > deadlineDays;
 
-  let daysText = isOverdue ? differenceInDays(today, new Date(startDate.getTime() + deadlineDays * 24 * 60 * 60 * 1000)) : daysRemaining;
-  daysText = Math.max(0, daysText); // Garante que não mostre números negativos
+  let daysText = isOverdue 
+    ? differenceInDays(today, new Date(startDate.getTime() + deadlineDays * 24 * 60 * 60 * 1000)) 
+    : daysRemaining;
+  daysText = Math.max(0, daysText);
   
   const progressPercentage = Math.min(100, (daysPassed / deadlineDays) * 100);
   const bgColor = isOverdue ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200';

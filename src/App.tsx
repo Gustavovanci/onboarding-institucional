@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-ro
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useModulesStore } from "@/stores/modulesStore";
+import { useProgressStore } from "@/stores/progressStore";
 import Layout from "@/components/layout/Layout";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -24,16 +25,15 @@ import MessagesPage from "@/pages/MessagesPage";
 import HistoryPage from "@/pages/HistoryPage";
 import ContentPage from "@/pages/ContentPage";
 import InnovationPage from "@/pages/InnovationPage";
-
-// Páginas do fluxo de Boas-Vindas
 import BoasVindasPage from "@/pages/BoasVindasPage";
 import NossoPapelSusPage from "@/pages/NossoPapelSusPage";
 import BoasVindasQuizPage from "@/pages/BoasVindasQuizPage";
 
-
 function App() {
-  const { isLoading: isAuthLoading, isAuthenticated, initializeAuthListener } = useAuthStore();
-  const { fetchModules, hasFetched, isLoading: isModulesLoading } = useModulesStore();
+  const { user, isLoading: isAuthLoading, isAuthenticated, initializeAuthListener } = useAuthStore();
+  const { fetchModules, hasFetched } = useModulesStore();
+  // ✅ CORREÇÃO: A função correta agora é chamada aqui
+  const { runRetroactiveChecks } = useProgressStore(); 
 
   useEffect(() => {
     const unsubscribe = initializeAuthListener();
@@ -41,18 +41,21 @@ function App() {
   }, [initializeAuthListener]);
 
   useEffect(() => {
-    if (isAuthenticated && !hasFetched) {
-      fetchModules();
+    if (isAuthenticated) {
+      if (!hasFetched) {
+        fetchModules();
+      }
+      if (user) {
+        // ✅ CORREÇÃO: A função correta é executada aqui
+        runRetroactiveChecks(user);
+      }
     }
-  }, [isAuthenticated, hasFetched, fetchModules]);
+  }, [isAuthenticated, user, hasFetched, fetchModules, runRetroactiveChecks]);
 
-  if (isAuthLoading || (isAuthenticated && !hasFetched && isModulesLoading)) {
+  if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-brand-light">
-        <div className="text-center space-y-4">
-          <LoadingSpinner />
-          <p className="text-gray-600 animate-pulse">Carregando plataforma...</p>
-        </div>
+        <div className="text-center space-y-4"><LoadingSpinner /><p className="text-gray-600 animate-pulse">Carregando plataforma...</p></div>
       </div>
     );
   }
@@ -63,18 +66,12 @@ function App() {
         <Routes>
           <Route path="/" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
           <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
-          
           <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetupPage /></ProtectedRoute>} />
-          
           <Route element={<ProtectedRoute><ProfileCheck /></ProtectedRoute>}>
             <Route path="/inicio" element={<Navigate to="/dashboard" replace />} />
-            
-            {/* ROTAS DO NOVO FLUXO DE BOAS-VINDAS */}
             <Route path="/boas-vindas" element={<Layout><BoasVindasPage /></Layout>} />
             <Route path="/nosso-papel-sus" element={<Layout><NossoPapelSusPage /></Layout>} />
             <Route path="/boas-vindas/quiz" element={<BoasVindasQuizPage />} />
-
-            {/* ROTAS EXISTENTES */}
             <Route path="/dashboard" element={<Layout><DashboardPage /></Layout>} />
             <Route path="/modules" element={<Layout><ModulesGridPage /></Layout>} />
             <Route path="/modules/nossa-historia" element={<Layout><HistoryPage /></Layout>} />
@@ -86,22 +83,11 @@ function App() {
             <Route path="/certificates" element={<Layout><CertificatesPage /></Layout>} />
             <Route path="/messages" element={<Layout><MessagesPage /></Layout>} />
             <Route path="/innovation" element={<Layout><InnovationPage /></Layout>} />
-            
-            {/* CORREÇÃO: Rotas de Benefícios e Comunicação agora usam o ContentPage */}
             <Route path="/benefits" element={<Layout><ContentPage pageId="beneficios" /></Layout>} />
             <Route path="/communication" element={<Layout><ContentPage pageId="comunicacao" /></Layout>} />
             <Route path="/quem-somos" element={<Layout><ContentPage pageId="quem-somos" /></Layout>} />
           </Route>
-
-          <Route path="*" element={
-            <div className="min-h-screen flex items-center justify-center text-center p-4">
-              <div>
-                <h1 className="text-4xl font-bold">404 - Página não encontrada</h1>
-                <p className="text-gray-500 mt-2">O endereço que você tentou acessar não existe.</p>
-                <Link to="/" className="btn-primary mt-6">Voltar ao Início</Link>
-              </div>
-            </div>
-          } />
+          <Route path="*" element={<div className="min-h-screen flex items-center justify-center text-center p-4"><div><h1 className="text-4xl font-bold">404 - Página não encontrada</h1><p className="text-gray-500 mt-2">O endereço que você tentou acessar não existe.</p><Link to="/" className="btn-primary mt-6">Voltar ao Início</Link></div></div>} />
         </Routes>
       </AppErrorBoundary>
     </Router>

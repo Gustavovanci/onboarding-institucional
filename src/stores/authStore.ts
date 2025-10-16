@@ -1,7 +1,7 @@
 // Arquivo: src/stores/authStore.ts
 
 import { create } from 'zustand';
-import { type User, type UserPersonalizations } from '@/types';
+import { type User, type UserPersonalizations, type OnboardingFeedback, type CompletionDetails } from '@/types'; // ✅ CORREÇÃO: A linha que importava LEVELS foi removida daqui.
 import { auth, googleProvider, db } from '@/utils/firebase';
 import {
   signInWithPopup,
@@ -51,7 +51,6 @@ function normalizeUser(firebaseUser: FirebaseUser, dbData: Partial<User> | undef
     createdAt: creationTime,
     lastAccess: (dbData?.lastAccess as any)?.toMillis?.() ?? dbData?.lastAccess ?? Date.now(),
     
-    // Campos do domínio da aplicação com padrões seguros
     role: dbData?.role ?? 'employee',
     instituto: dbData?.instituto ?? 'Outros',
     profession: dbData?.profession ?? '',
@@ -61,18 +60,17 @@ function normalizeUser(firebaseUser: FirebaseUser, dbData: Partial<User> | undef
     badges: dbData?.badges ?? [],
     quizAttempts: dbData?.quizAttempts ?? {},
 
-    // Campos de progresso e estado
     profileCompleted: dbData?.profileCompleted ?? false,
     onboardingCompleted: dbData?.onboardingCompleted ?? false,
     welcomeModalSeen: dbData?.welcomeModalSeen ?? false,
     tourSeen: dbData?.tourSeen ?? false,
 
-    // Campos de ranking
     currentRank: dbData?.currentRank ?? 0,
     instituteRank: dbData?.instituteRank ?? 0,
 
-    // Personalizações
     personalizations: personalizations,
+    onboardingFeedback: dbData?.onboardingFeedback,
+    completionDetails: dbData?.completionDetails,
   };
 }
 
@@ -99,12 +97,10 @@ async function ensureUserDoc(firebaseUser: FirebaseUser): Promise<Partial<User>>
       personalizations: DEFAULT_PERSONALIZATIONS,
     };
     await setDoc(userRef, newUser);
-    // Após criar, buscamos novamente para obter os timestamps corretos do servidor
     const createdSnap = await getDoc(userRef);
     return createdSnap.data() as Partial<User>;
   }
 
-  // Se o usuário já existe, apenas atualiza o último acesso
   await updateDoc(userRef, { lastAccess: serverTimestamp() });
   return snap.data() as Partial<User>;
 }
@@ -125,7 +121,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await signOut(auth);
         throw new Error('Somente contas @hc.fm.usp.br são permitidas.');
       }
-      // O listener onAuthStateChanged cuidará de setar o usuário.
     } catch (error) {
       const authError = error as AuthError;
       console.error('Erro no login com Google:', authError.code, authError.message);
@@ -150,12 +145,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       await updateDoc(userRef, data);
-
-      // Mescla os dados novos com o usuário atual no estado
       const updatedUser = { ...user, ...data };
       set({ user: updatedUser });
 
-      // Item 3: Se o instituto mudou, força a atualização do ranking do instituto
       if (data.instituto && data.instituto !== user.instituto) {
         useGamificationStore.getState().fetchInstituteLeaderboard(data.instituto);
       }
@@ -166,7 +158,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   initializeAuthListener: () => {
-    // Retorna a função de unsubscribe para limpeza
     return onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         set({ isLoading: true });
@@ -176,11 +167,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           set({ user, isAuthenticated: true, isLoading: false, error: null });
         } catch (e) {
           console.error('Falha ao carregar ou criar perfil do usuário:', e);
-          await signOut(auth); // Desloga o usuário se houver erro no perfil
+          await signOut(auth);
           set({ user: null, isAuthenticated: false, isLoading: false, error: 'Não foi possível carregar seu perfil.' });
         }
       } else {
-        // Usuário deslogado
         set({ user: null, isAuthenticated: false, isLoading: false });
       }
     });

@@ -20,6 +20,13 @@ export interface QuizAttempt {
   score: number;
 }
 
+// ✅ NOVO: Interface para o feedback detalhado
+export interface OnboardingFeedback {
+  rating: number;
+  message: string;
+  submittedAt: number;
+}
+
 export interface User {
   uid: string;
   email: string;
@@ -36,14 +43,18 @@ export interface User {
   createdAt: number;
   lastAccess: number | any;
   profileCompleted: boolean;
-  onboardingCompleted: boolean;
+  onboardingCompleted: boolean; // <-- Indica que a trilha foi concluída e o certificado emitido
   currentRank: number;
   instituteRank: number;
   welcomeModalSeen: boolean;
   tourSeen: boolean;
   personalizations: UserPersonalizations;
+
+  // ✅ NOVO: Objeto para armazenar o feedback detalhado no perfil do usuário
+  onboardingFeedback?: OnboardingFeedback; 
 }
 
+// O restante do arquivo (Module, Notification, etc.) permanece o mesmo...
 export interface Module {
   id: string;
   title: string;
@@ -127,7 +138,7 @@ export const PROFESSIONS_ARRAY: string[] = [
   "ASSESSOR TÉCNICO I", "ASSESSOR TÉCNICO II", "ASSESSOR TÉCNICO III", "ASSESSOR TÉCNICO IV", "ASSESSOR TÉCNICO VI",
   "ASSISTENTE ADMINISTRATIVO", "ASSISTENTE ADMINISTRATIVO HOSPITALAR", "ASSISTENTE COMERCIAL", "ASSISTENTE COMUNICACAO",
   "ASSISTENTE CONTABIL", "ASSISTENTE COORD JURIDICA", "ASSISTENTE DE DIRECAO", "ASSISTENTE DE PESQUISA",
-  "ASSISTENTE DE PLANEJAMENTO E CONTROLE", "ASSISTENTE DE PROJETOS", "ASSISTENTE DIRETORIA", "ASSISTENTE DIRETORIA EXECUTIVO PL",
+  "ASSISTENTE DE PLANEJAMENTO E CONTROLE", "ASSISTENTE DE PROJETOS", "ASSISTENTE DIRETORIA", "ASSISTente DIRETORIA EXECUTIVO PL",
   "ASSISTENTE DIRETORIA JR", "ASSISTENTE DIRETORIA PL", "ASSISTENTE DIRETORIA SR", "ASSISTENTE EVENTOS",
   "ASSISTENTE FINANCEIRO", "ASSISTENTE GERENCIA", "ASSISTENTE IMPRENSA", "ASSISTENTE MARKETING",
   "ASSISTENTE MEDICO EXECUTIVO I", "ASSISTENTE PESQUISA", "ASSISTENTE PESQUISA CLINICA", "ASSISTENTE PESQUISA JR",
