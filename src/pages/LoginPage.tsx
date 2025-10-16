@@ -1,89 +1,180 @@
 // src/pages/LoginPage.tsx
-import { LogIn, Shield, ArrowDown } from 'lucide-react';
+import { LogIn, Shield, ArrowDown, BookOpen, Award, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { motion } from 'framer-motion';
+
+// Variantes de animação para os textos e cards
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+    },
+  },
+};
 
 const LoginPage = () => {
   const { loginWithGoogle, isLoading } = useAuthStore();
 
   return (
-    <div className="min-h-screen w-full bg-brand-light">
+    <div className="w-full bg-gray-50 text-brand-dark">
       {/* Seção Hero */}
-      <div className="min-h-screen flex flex-col items-center justify-center text-center p-6 relative overflow-hidden" 
-           style={{
-             backgroundImage: "url('/fundo_backdropv2.png')", 
-             backgroundSize: 'cover', 
-             backgroundPosition: 'center'
-            }}>
-        
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0D4E48] via-[#136D5E] to-[#2B97D4] opacity-80"></div>
+      <section 
+        className="min-h-screen flex flex-col items-center justify-center text-center p-6 relative overflow-hidden"
+      >
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0"
+          style={{ backgroundImage: "url('/fundo_backdropv2.png')" }}
+        >
+          {/* Overlay para escurecer um pouco e melhorar o contraste */}
+          <div className="absolute inset-0 bg-brand-green3/70"></div>
+        </div>
 
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="relative z-10 max-w-4xl"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+          className="relative z-10 max-w-4xl flex flex-col items-center"
         >
-          <img src="/hc/HCFMUSP.png" alt="HCFMUSP Logo" className="w-32 md:w-48 mx-auto mb-8"/>
-          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-white">
-            Onboarding HCFMUSP
-          </h1>
-          <p className="mt-4 text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
-            Integração digital com gamificação, trilhas de conteúdo e uma jornada que começa pela nossa história.
-          </p>
+          <motion.img 
+            variants={itemVariants}
+            src="/hc/HCFMUSP.png" 
+            alt="HCFMUSP Logo" 
+            className="w-40 md:w-48 mb-6 brightness-0 invert"
+          />
+          <motion.h1 
+            variants={itemVariants}
+            className="text-4xl md:text-6xl font-extrabold leading-tight text-white"
+            style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
+          >
+            Sua Jornada no HCFMUSP Começa Aqui
+          </motion.h1>
+          <motion.p 
+            variants={itemVariants}
+            className="mt-4 text-lg md:text-xl text-white/90 max-w-2xl mx-auto"
+            style={{ textShadow: '0 1px 5px rgba(0,0,0,0.5)' }}
+          >
+            Bem-vindo(a) à plataforma de Onboarding Digital. Um espaço interativo para integrar, aprender e crescer conosco desde o primeiro dia.
+          </motion.p>
         </motion.div>
 
         <motion.a 
-          href="#login-section"
-          className="absolute bottom-12 flex flex-col items-center text-white/80 hover:text-white transition-colors z-10"
-          animate={{ y: [0, 8, 0] }}
+          href="#features-section"
+          animate={{ y: [0, 10, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-10 flex flex-col items-center text-white/80 z-10 cursor-pointer"
         >
-          <span className="mb-2 font-semibold">Role para Logar</span>
-          <ArrowDown className="w-8 h-8" />
+          <span className="mb-2 font-semibold">Role para saber mais</span>
+          <ArrowDown className="w-6 h-6" />
         </motion.a>
-      </div>
+      </section>
 
+      {/* Seção de Funcionalidades */}
+      <section id="features-section" className="py-20 px-6 bg-white">
+        <motion.div 
+          className="max-w-5xl mx-auto"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={containerVariants}
+        >
+          <h2 className="text-center text-3xl md:text-4xl font-bold text-brand-green3 mb-12">
+            Uma Plataforma Completa para sua Integração
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Card 1 */}
+            <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg">
+              <div className="w-16 h-16 bg-brand-azure text-white rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <BookOpen size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-brand-green3 mb-2">Trilhas de Aprendizagem</h3>
+              <p>Explore módulos essenciais sobre nossa cultura, procedimentos e valores de forma guiada e interativa.</p>
+            </motion.div>
+            {/* Card 2 */}
+            <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg">
+              <div className="w-16 h-16 bg-brand-green1 text-white rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Award size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-brand-green3 mb-2">Gamificação e Reconhecimento</h3>
+              <p>Ganhe pontos, conquiste badges e acompanhe seu progresso nos rankings do seu instituto e geral.</p>
+            </motion.div>
+            {/* Card 3 */}
+            <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg">
+              <div className="w-16 h-16 bg-brand-red text-white rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <TrendingUp size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-brand-green3 mb-2">Conecte-se com o HC</h3>
+              <p>Conheça a história do maior complexo hospitalar da América Latina e seu papel fundamental no SUS.</p>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+      
       {/* Seção de Login */}
-      <div id="login-section" className="flex items-center justify-center p-6 md:p-12 bg-white">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-3xl p-8 shadow-2xl border border-gray-200/60">
-            <div className="text-center mb-8">
-                <img src="/hc/Onboarding-HC-Logo.png" alt="Onboarding HC Logo" className="w-40 mx-auto"/>
-            </div>
-            <button
-              onClick={loginWithGoogle}
-              disabled={isLoading}
-              className="group w-full bg-brand-azure hover:bg-brand-teal text-white font-bold rounded-2xl text-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 p-6 flex items-center justify-center space-x-3 disabled:opacity-70"
+      <section id="login-section" className="py-20 px-6 bg-gray-100">
+        <motion.div 
+          className="max-w-md mx-auto text-center"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
+          variants={containerVariants}
+        >
+            <motion.h2 variants={itemVariants} className="text-3xl font-bold text-brand-green3 mb-4">Pronto para começar?</motion.h2>
+            <motion.p variants={itemVariants} className="text-gray-600 mb-8">
+                Clique no botão abaixo para fazer o login com seu e-mail institucional e dar o primeiro passo na sua jornada.
+            </motion.p>
+            <motion.button
+                variants={itemVariants}
+                onClick={loginWithGoogle}
+                disabled={isLoading}
+                className="bg-brand-red hover:opacity-90 text-white font-bold rounded-2xl text-lg transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 p-5 px-10 flex items-center justify-center space-x-3 disabled:opacity-70 w-full"
             >
-              {isLoading ? (
-                  <div className="w-6 h-6 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
-              ) : (
+                {isLoading ? (
+                    <div className="w-6 h-6 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                ) : (
                 <>
-                  <LogIn className="w-6 h-6" />
-                  <span>Entrar com e-mail HC</span>
+                    <LogIn className="w-6 h-6" />
+                    <span>Entrar com e-mail institucional</span>
                 </>
-              )}
-            </button>
-            <div className="mt-8 p-4 bg-gray-50 rounded-2xl border border-gray-200/80">
-              <div className="flex items-center space-x-3">
-                <Shield className="w-5 h-5 text-brand-azure" />
-                <div>
-                  <p className="text-gray-800 text-sm font-medium mb-1">Acesso Seguro</p>
-                  <p className="text-gray-600 text-xs">
-                    Use seu e-mail corporativo para continuar. O acesso é restrito a colaboradores do HC.
-                  </p>
-                </div>
+                )}
+            </motion.button>
+        </motion.div>
+      </section>
+
+      {/* Rodapé */}
+      <footer className="bg-brand-green3 text-white/80 p-10">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 items-center">
+          <div className="md:col-span-2">
+            <h4 className="text-lg font-bold text-white mb-2">Onboarding Digital HCFMUSP</h4>
+            <p className="text-sm">© {new Date().getFullYear()} Hospital das Clínicas da FMUSP. Todos os direitos reservados.</p>
+            <div className="mt-4 p-4 bg-white/10 rounded-lg flex items-center space-x-3">
+              <Shield className="w-5 h-5 text-white" />
+              <div>
+                <p className="text-white text-sm font-medium">Acesso Seguro</p>
+                <p className="text-white/80 text-xs">
+                  O acesso é restrito a colaboradores com e-mail institucional.
+                </p>
               </div>
             </div>
           </div>
-          <div className="text-center mt-8">
-            <p className="text-gray-500 text-sm">
-              © {new Date().getFullYear()} Hospital das Clínicas - Integração Digital
-            </p>
+          <div className="flex items-center justify-center h-32 bg-white/10 rounded-2xl border-2 border-dashed border-white/30">
+            <span className="text-sm">Espaço para imagem</span>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 };

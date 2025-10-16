@@ -63,6 +63,7 @@ export default function BoasVindasPage() {
         </div>
       </div>
 
+      {/* CORREÇÃO: O botão "Avançar" é sempre visível aqui */}
       <div className="text-center pt-8">
         <Link to="/nosso-papel-sus" className="btn-primary text-lg px-10 py-4">
           Avançar

@@ -24,13 +24,13 @@ const ProfileSetupPage = () => {
     setError('');
 
     try {
-      // CORREÇÃO 13 e 14: Marca o modal como visto e solicita o início do tour
+      // CORREÇÃO: Marca o perfil como completo, o modal de boas-vindas como visto e solicita o início do tour
       await updateUserProfile({
         instituto,
         profession,
         profileCompleted: true,
-        welcomeModalSeen: true, // Impede que o modal de boas-vindas apareça
-        tourSeen: false, // Garante que o tour será exibido
+        welcomeModalSeen: true, // Impede que o modal de boas-vindas apareça novamente
+        tourSeen: false, // Garante que o tour será exibido na próxima vez
       });
       // Navega para o dashboard passando o estado para iniciar o tour
       navigate('/dashboard', { state: { startTour: true } });

@@ -14,19 +14,24 @@ export default function ModulesGridPage() {
   const isModuleUnlocked = (module: Module): boolean => {
     if (!user) return false;
 
-    // LÓGICA DE DESBLOQUEIO CORRIGIDA
-    // Se o módulo NÃO for obrigatório (Ex: HCX)
+    // CORREÇÃO: Lógica de desbloqueio refinada
+    // Se o módulo NÃO for obrigatório (Ex: HCX - Módulo Bônus)
     if (!module.isRequired) {
-      // Ele só é desbloqueado se o onboarding geral já foi marcado como concluído
-      return user.onboardingCompleted;
+      // Ele só é desbloqueado se todos os módulos OBRIGATÓRIOS já foram concluídos.
+      const requiredModules = modules.filter(m => m.isRequired);
+      return requiredModules.every(m => user.completedModules.includes(m.id));
     }
 
-    // Para módulos obrigatórios
-    if (module.order === 1) return true; // O primeiro é sempre desbloqueado
+    // Para módulos obrigatórios (os que fazem parte da trilha principal)
+    if (module.order === 1) return true; // O primeiro módulo é sempre desbloqueado
     
+    // Encontra o módulo obrigatório anterior na sequência
     const previousModule = modules.find(m => m.order === module.order - 1 && m.isRequired);
+    
+    // Se não houver um módulo anterior obrigatório (pouco provável, mas seguro), libera.
     if (!previousModule) return true; 
     
+    // Libera se o módulo obrigatório anterior foi concluído.
     return user.completedModules.includes(previousModule.id);
   };
 

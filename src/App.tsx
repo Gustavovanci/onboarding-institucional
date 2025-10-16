@@ -20,14 +20,12 @@ import ProfilePage from "@/pages/ProfilePage";
 import SettingsPage from "@/pages/SettingsPage";
 import QuizPage from "@/pages/QuizPage";
 import CertificatesPage from "@/pages/CertificatesPage";
-import BenefitsPage from "@/pages/BenefitsPage";
-import CommunicationPage from "@/pages/CommunicationPage";
-import InnovationPage from "@/pages/InnovationPage";
 import MessagesPage from "@/pages/MessagesPage";
 import HistoryPage from "@/pages/HistoryPage";
 import ContentPage from "@/pages/ContentPage";
+import InnovationPage from "@/pages/InnovationPage";
 
-// NOVAS PÁGINAS DO FLUXO DE BOAS-VINDAS
+// Páginas do fluxo de Boas-Vindas
 import BoasVindasPage from "@/pages/BoasVindasPage";
 import NossoPapelSusPage from "@/pages/NossoPapelSusPage";
 import BoasVindasQuizPage from "@/pages/BoasVindasQuizPage";
@@ -87,9 +85,11 @@ function App() {
             <Route path="/settings" element={<Layout><SettingsPage /></Layout>} />
             <Route path="/certificates" element={<Layout><CertificatesPage /></Layout>} />
             <Route path="/messages" element={<Layout><MessagesPage /></Layout>} />
-            <Route path="/benefits" element={<Layout><BenefitsPage /></Layout>} />
-            <Route path="/communication" element={<Layout><CommunicationPage /></Layout>} />
             <Route path="/innovation" element={<Layout><InnovationPage /></Layout>} />
+            
+            {/* CORREÇÃO: Rotas de Benefícios e Comunicação agora usam o ContentPage */}
+            <Route path="/benefits" element={<Layout><ContentPage pageId="beneficios" /></Layout>} />
+            <Route path="/communication" element={<Layout><ContentPage pageId="comunicacao" /></Layout>} />
             <Route path="/quem-somos" element={<Layout><ContentPage pageId="quem-somos" /></Layout>} />
           </Route>
 

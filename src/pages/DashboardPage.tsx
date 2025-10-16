@@ -1,6 +1,6 @@
 // src/pages/DashboardPage.tsx
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Award, TrendingUp } from "lucide-react";
 
@@ -28,22 +28,22 @@ export default function DashboardPage() {
   const { user, updateUserProfile } = useAuthStore();
   const { modules } = useModulesStore();
   const { leaderboard, instituteLeaderboards, fetchLeaderboard, fetchInstituteLeaderboard } = useGamificationStore();
+  
+  const navigate = useNavigate();
 
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [startTour, setStartTour] = useState(false);
-  const [isModalLogicActive, setIsModalLogicActive] = useState(false);
 
   useEffect(() => {
-    if (user && !user.welcomeModalSeen && !isModalLogicActive) {
-      setIsModalLogicActive(true);
+    // CORREÇÃO: A única responsabilidade deste efeito é mostrar o modal se ele nunca foi visto.
+    if (user && !user.welcomeModalSeen) {
       const timer = setTimeout(() => {
         setShowWelcomeModal(true);
-      }, 500);
+      }, 500); // Um pequeno delay para a transição de tela
       return () => clearTimeout(timer);
     }
-  }, [user, user?.welcomeModalSeen, isModalLogicActive]);
+  }, [user, user?.welcomeModalSeen]);
 
-  // CORREÇÃO: Efeito para buscar dados, executado de forma mais controlada.
   useEffect(() => {
     if (user?.uid) {
       fetchLeaderboard();
@@ -51,11 +51,8 @@ export default function DashboardPage() {
         fetchInstituteLeaderboard(user.instituto);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, user?.instituto]); // Depende apenas de IDs estáveis do usuário
+  }, [user?.uid, user?.instituto, fetchLeaderboard, fetchInstituteLeaderboard]);
 
-  // CORREÇÃO: Efeito para ATUALIZAR o ranking, separado do resto.
-  // Ele só roda quando os leaderboards (fonte da verdade) mudam.
   useEffect(() => {
     if (!user || leaderboard.length === 0) return;
 
@@ -71,21 +68,20 @@ export default function DashboardPage() {
         instituteRank: instituteRank > 0 ? instituteRank : user.instituteRank,
       });
     }
-    // Este efeito NÃO deve depender do 'user' para evitar o loop.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leaderboard, instituteLeaderboards]);
+  }, [leaderboard, instituteLeaderboards, user, updateUserProfile]);
 
 
-  const handleModalClose = (shouldStartTour: boolean) => {
+  const handleModalClose = (shouldStartTour = false) => {
     setShowWelcomeModal(false);
     if (user && !user.welcomeModalSeen) {
       updateUserProfile({ welcomeModalSeen: true }).then(() => {
         if (shouldStartTour && !user.tourSeen) {
           setTimeout(() => setStartTour(true), 300);
+        } else if (!shouldStartTour) {
+           // Se o usuário clicar em "Começar Agora", redireciona para o treinamento
+           navigate('/boas-vindas');
         }
       });
-    } else if (shouldStartTour && user && !user.tourSeen) {
-      setTimeout(() => setStartTour(true), 300);
     }
   };
 
@@ -94,6 +90,8 @@ export default function DashboardPage() {
     if (user && !user.tourSeen) {
       updateUserProfile({ tourSeen: true });
     }
+    // Após fechar o tour, navega para a página de boas-vindas
+    navigate('/boas-vindas');
   };
 
   if (!user) {

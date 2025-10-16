@@ -1,7 +1,6 @@
 // src/components/dashboard/ProfileCard.tsx
 import { motion } from "framer-motion";
 import type { User, InstitutoConfig } from "../../types";
-// Importando as configs para usar os dados de personalização
 import { COLOR_THEMES, STATUS_EMOJIS, CUSTOM_TITLES } from "../../config/personalization";
 
 interface ProfileCardProps {
@@ -11,7 +10,6 @@ interface ProfileCardProps {
   totalModules: number;
 }
 
-// Função auxiliar para encontrar a personalização correta pelo ID
 const findById = (array: any[], id: string, defaultId: string) =>
   array.find(item => item.id === id) || array.find(item => item.id === defaultId);
 
@@ -22,7 +20,6 @@ export default function ProfileCard({
   totalModules,
 }: ProfileCardProps) {
   
-  // Busca as personalizações salvas do usuário, com um padrão caso não existam
   const theme = findById(COLOR_THEMES, user.personalizations?.colorTheme || '', 'classic');
   const emoji = findById(STATUS_EMOJIS, user.personalizations?.statusEmoji || '', 'happy');
   const title = findById(CUSTOM_TITLES, user.personalizations?.customTitle || '', 'explorer');
@@ -37,9 +34,9 @@ export default function ProfileCard({
         <div className="absolute inset-0 bg-black/10" />
         <div className="absolute bottom-4 left-6 flex items-end gap-6">
           <div className="relative">
-            {/* --- ADIÇÃO DA PROPRIEDADE crossOrigin --- */}
             <img
               crossOrigin="anonymous"
+              referrerPolicy="no-referrer" // <-- CORREÇÃO ADICIONADA
               src={user.photoURL ? user.photoURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&size=160&background=ffffff&color=2b97d4`}
               alt={user.displayName}
               className="w-32 h-32 rounded-2xl border-4 border-white shadow-lg object-cover"
@@ -58,7 +55,12 @@ export default function ProfileCard({
         </div>
       </div>
 
-      <div className="px-6 py-4 bg-gray-50/50">
+      <div className="px-6 py-4">
+        {user.bio && (
+          <div className="pb-4 mb-4 border-b border-gray-200">
+            <p className="text-center text-gray-600 italic">"{user.bio}"</p>
+          </div>
+        )}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="text-center"><div className="text-2xl font-bold text-brand-azure">{user.points || 0}</div><div className="text-xs text-gray-500">Pontos</div></div>
           <div className="text-center"><div className="text-2xl font-bold text-brand-teal">#{user.currentRank || "N/A"}</div><div className="text-xs text-gray-500">Ranking Geral</div></div>

@@ -41,7 +41,8 @@ export const InstituteRankingCard = () => {
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-sm w-5 text-center text-yellow-800">{index + 1}</span>
                   <img 
-                    crossOrigin="anonymous" // <-- CORREÇÃO APLICADA
+                    crossOrigin="anonymous"
+                    referrerPolicy="no-referrer" // <-- CORREÇÃO ADICIONADA
                     src={player.photoURL || `https://ui-avatars.com/api/?name=${player.displayName}`} 
                     alt={player.displayName} className="w-8 h-8 rounded-full" 
                    />

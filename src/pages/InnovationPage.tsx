@@ -1,5 +1,4 @@
 // src/pages/InnovationPage.tsx
-import { Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import VideoPlayer from '@/components/common/VideoPlayer';
 
@@ -11,7 +10,12 @@ export default function InnovationPage () {
       className="max-w-4xl mx-auto"
     >
       <div className="text-center mb-12">
-        <Zap className="w-12 h-12 mx-auto text-orange-500" />
+        {/* CORREÇÃO: Ícone de raio substituído por um placeholder de imagem */}
+        <img
+          src="/images/inovahc-logo.png" // <-- Você pode alterar este caminho para o local do seu arquivo de imagem
+          alt="InovaHC Logo"
+          className="w-48 mx-auto mb-4 object-contain"
+        />
         <h1 className="text-4xl font-bold text-gray-900 mt-4">InovaHC</h1>
         <p className="mt-2 text-lg text-gray-600">O Núcleo de Inovação Tecnológica do Hospital das Clínicas da FMUSP.</p>
       </div>

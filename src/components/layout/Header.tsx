@@ -49,9 +49,9 @@ export default function Header() {
 
             <div className="relative">
               <button onClick={() => setShowUserMenu(!showUserMenu)} className="flex items-center gap-2 rounded-full hover:ring-2 hover:ring-brand-azure hover:ring-offset-2 transition-all">
-                {/* --- ADIÇÃO DA PROPRIEDADE crossOrigin --- */}
                 <img
                   crossOrigin="anonymous" 
+                  referrerPolicy="no-referrer" // <-- CORREÇÃO ADICIONADA
                   src={user.photoURL ? user.photoURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}`}
                   alt="Avatar do usuário"
                   className="w-10 h-10 rounded-full border-2 border-white shadow-sm"

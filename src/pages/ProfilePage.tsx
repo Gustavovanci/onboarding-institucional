@@ -1,11 +1,10 @@
 // src/pages/ProfilePage.tsx
 import { motion } from "framer-motion";
-import { Mail, Briefcase, Edit, Award, TrendingUp } from "lucide-react";
+import { Mail, Briefcase, Award, TrendingUp } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { INSTITUTOS_CONFIG } from "@/types";
 import { COLOR_THEMES, STATUS_EMOJIS, CUSTOM_TITLES } from "@/config/personalization";
-import { Link } from "react-router-dom";
 
 const ProfilePage = () => {
   const { user } = useAuthStore();
@@ -21,20 +20,20 @@ const ProfilePage = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 max-w-4xl mx-auto">
+       <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900">Meu Perfil</h1>
+        <p className="mt-2 text-lg text-gray-600">Este é o seu cartão de visita na plataforma Onboarding HC.</p>
+      </div>
+
       <div className="card-elevated p-0 overflow-hidden">
-        {/* Header do Perfil */}
-        <div className={`h-40 bg-gradient-to-r ${theme.primary} relative p-6 flex justify-end items-start`}>
-            <Link to="/settings" className="btn-secondary !rounded-full !px-4 !py-2 bg-white/20 text-white hover:bg-white/30 border-white/50 border">
-              <Edit size={16} className="mr-2" /> Editar Perfil
-            </Link>
-        </div>
+        <div className={`h-40 bg-gradient-to-r ${theme.primary} relative p-6`}></div>
         
-        {/* Conteúdo do Perfil */}
         <div className="p-6 md:p-8">
             <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-24 relative">
                 <div className="relative">
                     <img
                         crossOrigin="anonymous"
+                        referrerPolicy="no-referrer" // <-- CORREÇÃO ADICIONADA
                         src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`}
                         alt={user.displayName}
                         className="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg"
@@ -55,12 +54,12 @@ const ProfilePage = () => {
                 </div>
                  <div className="bg-gray-50 p-4 rounded-xl">
                     <TrendingUp className="mx-auto text-blue-500 mb-1" />
-                    <p className="text-2xl font-bold">#{user.currentRank || 'N/A'}</p>
+                    <p className="text-2xl font-bold">#{user.currentRank > 0 ? user.currentRank : 'N/A'}</p>
                     <p className="text-sm text-gray-500">Ranking Geral</p>
                 </div>
                  <div className="bg-gray-50 p-4 rounded-xl">
                     <TrendingUp className="mx-auto text-purple-500 mb-1" />
-                    <p className="text-2xl font-bold">#{user.instituteRank || 'N/A'}</p>
+                    <p className="text-2xl font-bold">#{user.instituteRank > 0 ? user.instituteRank : 'N/A'}</p>
                     <p className="text-sm text-gray-500">Ranking do Instituto</p>
                 </div>
             </div>

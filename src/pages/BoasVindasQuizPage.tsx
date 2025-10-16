@@ -3,9 +3,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useProgressStore } from '../stores/progressStore';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, Award } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 const quizQuestions = [
     {
@@ -22,15 +21,11 @@ const quizQuestions = [
     }
 ];
 
-// ==================================================================
-// == A CORREÇÃO ESTÁ AQUI: Verifique se 'export default' está presente.
-// ==================================================================
 export default function BoasVindasQuizPage() {
     const navigate = useNavigate();
     const { user } = useAuthStore();
     const { awardBadgeAndPoints, isLoading } = useProgressStore();
     const [answers, setAnswers] = useState<(number | null)[]>(new Array(quizQuestions.length).fill(null));
-    const [submitted, setSubmitted] = useState(false);
     const [showResults, setShowResults] = useState(false);
 
     const hasCompletedCheckin = user?.badges.includes('checkin-hc');
@@ -47,6 +42,7 @@ export default function BoasVindasQuizPage() {
             alert('Por favor, responda todas as perguntas.');
             return;
         }
+        
         setShowResults(true);
         
         const isCorrect = answers.every((ans, i) => ans === quizQuestions[i].correct);
@@ -55,36 +51,15 @@ export default function BoasVindasQuizPage() {
             await awardBadgeAndPoints(user!.uid, 'checkin-hc');
         }
 
+        // CORREÇÃO: Redireciona de volta para a página do vídeo do SUS
         setTimeout(() => {
-            setSubmitted(true);
-            setTimeout(() => navigate('/dashboard'), 3000);
+            navigate('/nosso-papel-sus');
         }, 4000);
     };
     
-    if (hasCompletedCheckin && !submitted) {
-        return (
-            <div className="min-h-screen flex items-center justify-center text-center p-4 bg-gray-100">
-                <div className="card-elevated">
-                    <CheckCircle className="w-16 h-16 mx-auto text-brand-green1" />
-                    <h2 className="text-2xl font-bold mt-4">Check-in Concluído!</h2>
-                    <p className="text-gray-600 mt-2">Você já completou a etapa de Boas-Vindas.</p>
-                    <button onClick={() => navigate('/dashboard')} className="btn-primary mt-6">Voltar ao Início</button>
-                </div>
-            </div>
-        );
-    }
-
-    if (submitted) {
-         return (
-            <div className="min-h-screen flex items-center justify-center text-center p-4 bg-green-50">
-                <motion.div initial={{opacity: 0, scale: 0.8}} animate={{opacity: 1, scale: 1}}>
-                    <Award className="w-24 h-24 mx-auto text-yellow-500" />
-                    <h2 className="text-3xl font-bold mt-6">Parabéns, {user?.displayName?.split(' ')[0]}!</h2>
-                    <p className="text-lg text-gray-700 mt-2">Você concluiu a etapa de Boas-Vindas e ganhou o badge "Iniciante HC" e 100 pontos!</p>
-                    <p className="text-gray-500 mt-4">Redirecionando para o painel principal...</p>
-                </motion.div>
-            </div>
-        )
+    if (hasCompletedCheckin && !showResults) {
+        navigate('/nosso-papel-sus');
+        return null;
     }
 
     return (
@@ -134,6 +109,9 @@ export default function BoasVindasQuizPage() {
                     <button onClick={handleSubmit} disabled={isLoading || showResults} className="btn-primary text-lg w-full sm:w-auto disabled:opacity-50">
                         {isLoading ? 'Aguarde...' : 'Finalizar Quiz'}
                     </button>
+                    {showResults && (
+                        <p className="text-sm text-gray-500 mt-4 animate-pulse">Você será redirecionado em instantes...</p>
+                    )}
                 </div>
             </div>
         </div>
