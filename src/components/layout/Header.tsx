@@ -105,7 +105,6 @@ export default function Header() {
               <button onClick={() => setShowUserMenu(!showUserMenu)} className="flex items-center gap-2 rounded-full hover:ring-2 hover:ring-brand-azure hover:ring-offset-2 transition-all">
                 <img
                   crossOrigin="anonymous" 
-                  referrerPolicy="no-referrer"
                   src={user.photoURL ? user.photoURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}`}
                   alt="Avatar do usuário"
                   className="w-10 h-10 rounded-full border-2 border-white shadow-sm"

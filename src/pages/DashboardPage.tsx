@@ -35,7 +35,8 @@ export default function DashboardPage() {
   const [startTour, setStartTour] = useState(false);
 
   useEffect(() => {
-    // CORREÇÃO: A única responsabilidade deste efeito é mostrar o modal se ele nunca foi visto.
+    // ✅ ESTA É A LÓGICA CORRETA:
+    // A única responsabilidade deste efeito é mostrar o modal se ele nunca foi visto.
     if (user && !user.welcomeModalSeen) {
       const timer = setTimeout(() => {
         setShowWelcomeModal(true);
@@ -73,6 +74,7 @@ export default function DashboardPage() {
 
   const handleModalClose = (shouldStartTour = false) => {
     setShowWelcomeModal(false);
+    // ✅ LÓGICA CORRETA: a flag 'welcomeModalSeen' só é marcada como true DEPOIS que o modal é fechado.
     if (user && !user.welcomeModalSeen) {
       updateUserProfile({ welcomeModalSeen: true }).then(() => {
         if (shouldStartTour && !user.tourSeen) {

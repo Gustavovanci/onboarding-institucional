@@ -24,8 +24,9 @@ const ProfileSetupPage = () => {
     setError('');
 
     try {
-      // ✅ CORREÇÃO: A linha 'welcomeModalSeen: true' foi removida daqui.
-      // O modal agora será exibido corretamente no primeiro acesso ao dashboard.
+      // ✅ CORREÇÃO APLICADA AQUI:
+      // A linha 'welcomeModalSeen: true' foi removida.
+      // Agora, apenas o status de conclusão do perfil é atualizado.
       await updateUserProfile({
         instituto,
         profession,

@@ -36,7 +36,6 @@ export default function ProfileCard({
           <div className="relative">
             <img
               crossOrigin="anonymous"
-              referrerPolicy="no-referrer"
               src={user.photoURL ? user.photoURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&size=160&background=ffffff&color=2b97d4`}
               alt={user.displayName}
               className="w-32 h-32 rounded-2xl border-4 border-white shadow-lg object-cover"
