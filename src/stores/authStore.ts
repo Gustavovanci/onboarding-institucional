@@ -27,11 +27,14 @@ function normalizeUser(firebaseUser: FirebaseUser, dbData: Partial<User> | undef
     ? new Date(firebaseUser.metadata.creationTime).getTime() 
     : (dbData?.createdAt as any)?.toMillis() ?? Date.now();
 
+  // ✅ CORREÇÃO APLICADA AQUI: Limpa a URL da foto para evitar problemas de CORS
+  const photoURL = firebaseUser.photoURL ? firebaseUser.photoURL.split('=')[0] : null;
+
   return {
     uid: firebaseUser.uid,
     email: firebaseUser.email ?? dbData?.email ?? '',
     displayName: firebaseUser.displayName ?? dbData?.displayName ?? '',
-    photoURL: firebaseUser.photoURL ?? dbData?.photoURL ?? null,
+    photoURL: photoURL ?? dbData?.photoURL ?? null, // Utiliza a URL limpa
     createdAt: creationTime,
     lastAccess: (dbData?.lastAccess as any)?.toMillis?.() ?? dbData?.lastAccess ?? Date.now(),
     role: dbData?.role ?? 'employee',
@@ -157,4 +160,3 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
 }));
-
