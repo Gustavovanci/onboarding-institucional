@@ -10,6 +10,13 @@ import ProfileCardModal from '@/components/profile/ProfileCardModal';
 
 type FilterType = 'Geral' | 'Meu Instituto';
 
+// ✅ ADICIONE ESSA FUNÇÃO
+const cleanPhotoURL = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  // Remove tudo depois do primeiro '=' para limpar tokens do Google
+  return url.split('=')[0];
+};
+
 const RankingPage = () => {
   const { user } = useAuthStore();
   const { leaderboard, isLoading, fetchLeaderboard } = useGamificationStore();
@@ -63,39 +70,49 @@ const RankingPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {leaderboard.map((player, index) => (
-                  <motion.tr
-                    key={player.uid}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    className={`transition-colors ${player.uid === user?.uid ? 'bg-blue-50 border-l-4 border-brand-azure' : 'hover:bg-gray-50'}`}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center justify-center w-8 h-8">
-                        {getRankIndicator(index)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button onClick={() => setSelectedUser(player as User)} className="flex items-center space-x-4 text-left group">
-                        <img
-                          crossOrigin="anonymous"
-                          src={player.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.displayName)}&background=random`}
-                          alt={player.displayName || ''}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm transition-transform group-hover:scale-110"
-                        />
-                        <div>
-                          <div className="font-semibold text-gray-900 group-hover:text-brand-azure transition-colors">{player.displayName}</div>
-                          <div className="text-sm text-gray-500">{player.profession || 'Não informado'}</div>
+                {leaderboard.map((player, index) => {
+                  // ✅ LIMPA A URL AQUI
+                  const cleanedPhotoURL = cleanPhotoURL(player.photoURL);
+                  const fallbackURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.displayName)}&background=random`;
+                  
+                  return (
+                    <motion.tr
+                      key={player.uid}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className={`transition-colors ${player.uid === user?.uid ? 'bg-blue-50 border-l-4 border-brand-azure' : 'hover:bg-gray-50'}`}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center justify-center w-8 h-8">
+                          {getRankIndicator(index)}
                         </div>
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {INSTITUTOS_CONFIG[player.instituto]?.name || player.instituto}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-lg text-brand-azure">{player.points}</td>
-                  </motion.tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button onClick={() => setSelectedUser(player as User)} className="flex items-center space-x-4 text-left group">
+                          <img
+                            src={cleanedPhotoURL || fallbackURL}
+                            alt={player.displayName || ''}
+                            className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm transition-transform group-hover:scale-110"
+                            onError={(e) => {
+                              // ✅ FALLBACK SE DER ERRO
+                              e.currentTarget.src = fallbackURL;
+                            }}
+                            referrerPolicy="no-referrer"
+                          />
+                          <div>
+                            <div className="font-semibold text-gray-900 group-hover:text-brand-azure transition-colors">{player.displayName}</div>
+                            <div className="text-sm text-gray-500">{player.profession || 'Não informado'}</div>
+                          </div>
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {INSTITUTOS_CONFIG[player.instituto]?.name || player.instituto}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-lg text-brand-azure">{player.points}</td>
+                    </motion.tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
