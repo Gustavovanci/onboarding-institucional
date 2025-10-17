@@ -2,6 +2,7 @@
 import { LogIn, Shield, ArrowDown, BookOpen, Award, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom'; // Importação do Link
 
 // Variantes de animação para os textos e cards
 const containerVariants = {
@@ -39,7 +40,6 @@ const LoginPage = () => {
           className="absolute inset-0 bg-cover bg-center z-0"
           style={{ backgroundImage: "url('/fundo_backdropv2.png')" }}
         >
-          {/* Overlay para escurecer um pouco e melhorar o contraste */}
           <div className="absolute inset-0 bg-brand-green3/70"></div>
         </div>
 
@@ -95,27 +95,18 @@ const LoginPage = () => {
             Uma Plataforma Completa para sua Integração
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Card 1 */}
             <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-brand-azure text-white rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <BookOpen size={32} />
-              </div>
+              <div className="w-16 h-16 bg-brand-azure text-white rounded-2xl flex items-center justify-center mx-auto mb-4"><BookOpen size={32} /></div>
               <h3 className="text-xl font-bold text-brand-green3 mb-2">Trilhas de Aprendizagem</h3>
               <p>Explore módulos essenciais sobre nossa cultura, procedimentos e valores de forma guiada e interativa.</p>
             </motion.div>
-            {/* Card 2 */}
             <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-brand-green1 text-white rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Award size={32} />
-              </div>
+              <div className="w-16 h-16 bg-brand-green1 text-white rounded-2xl flex items-center justify-center mx-auto mb-4"><Award size={32} /></div>
               <h3 className="text-xl font-bold text-brand-green3 mb-2">Gamificação e Reconhecimento</h3>
               <p>Ganhe pontos, conquiste badges e acompanhe seu progresso nos rankings do seu instituto e geral.</p>
             </motion.div>
-            {/* Card 3 */}
             <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-brand-red text-white rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <TrendingUp size={32} />
-              </div>
+              <div className="w-16 h-16 bg-brand-red text-white rounded-2xl flex items-center justify-center mx-auto mb-4"><TrendingUp size={32} /></div>
               <h3 className="text-xl font-bold text-brand-green3 mb-2">Conecte-se com o HC</h3>
               <p>Conheça a história do maior complexo hospitalar da América Latina e seu papel fundamental no SUS.</p>
             </motion.div>
@@ -154,25 +145,17 @@ const LoginPage = () => {
         </motion.div>
       </section>
 
-      {/* Rodapé */}
-      <footer className="bg-brand-green3 text-white/80 p-10">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 items-center">
-          <div className="md:col-span-2">
-            <h4 className="text-lg font-bold text-white mb-2">Onboarding Digital HCFMUSP</h4>
-            <p className="text-sm">© {new Date().getFullYear()} Hospital das Clínicas da FMUSP. Todos os direitos reservados.</p>
-            <div className="mt-4 p-4 bg-white/10 rounded-lg flex items-center space-x-3">
-              <Shield className="w-5 h-5 text-white" />
-              <div>
-                <p className="text-white text-sm font-medium">Acesso Seguro</p>
-                <p className="text-white/80 text-xs">
-                  O acesso é restrito a colaboradores com e-mail institucional.
-                </p>
-              </div>
+      {/* Rodapé com o link de Admin */}
+      <footer className="bg-brand-green3 text-white/80 p-6">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
+            <div>
+                <p className="text-sm">© {new Date().getFullYear()} Hospital das Clínicas da FMUSP. Todos os direitos reservados.</p>
             </div>
-          </div>
-          <div className="flex items-center justify-center h-32 bg-white/10 rounded-2xl border-2 border-dashed border-white/30">
-            <span className="text-sm">Espaço para imagem</span>
-          </div>
+            <div>
+                <Link to="/admin/login" className="text-xs text-white/60 hover:text-white hover:underline transition-colors">
+                    Acesso Administrativo
+                </Link>
+            </div>
         </div>
       </footer>
     </div>

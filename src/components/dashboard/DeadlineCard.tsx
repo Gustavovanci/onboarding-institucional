@@ -12,12 +12,10 @@ export const DeadlineCard = () => {
   
   // LÓGICA DE EXIBIÇÃO APÓS A CONCLUSÃO
   if (user.onboardingCompleted) {
-    // ✅ CORREÇÃO FINAL: A lógica agora é mais robusta e verifica as duas fontes de verdade.
-    // Primeiro, checa se o campo 'completionDetails' confirma a conclusão rápida.
-    // Depois, como fallback para usuários antigos, verifica se o badge já foi concedido.
-    const completedInSprint = 
-        (user.completionDetails && user.completionDetails.daysToComplete <= 7) || 
-        user.badges.includes('onboarding-sprint');
+    // ✅ CORREÇÃO APLICADA: A verificação agora foca apenas na fonte da verdade,
+    // que é o `completionDetails`. Isso remove a dependência de o badge já ter sido
+    // processado e atualizado no estado local.
+    const completedInSprint = user.completionDetails && user.completionDetails.daysToComplete <= 7;
 
     if (completedInSprint) {
       return (

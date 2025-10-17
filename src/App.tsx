@@ -1,4 +1,3 @@
-// src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
@@ -29,10 +28,15 @@ import BoasVindasPage from "@/pages/BoasVindasPage";
 import NossoPapelSusPage from "@/pages/NossoPapelSusPage";
 import BoasVindasQuizPage from "@/pages/BoasVindasQuizPage";
 
+// IMPORTAÇÕES PARA O PORTAL ADMIN
+import AdminLayout from "@/components/layout/AdminLayout";
+import AdminDashboardPage from "@/pages/AdminDashboardPage";
+import AdminLoginPage from "@/pages/AdminLoginPage"; 
+import UserManagementPage from "@/pages/UserManagementPage"; // ✅ NOVA PÁGINA
+
 function App() {
   const { user, isLoading: isAuthLoading, isAuthenticated, initializeAuthListener } = useAuthStore();
   const { fetchModules, hasFetched } = useModulesStore();
-  // ✅ CORREÇÃO: A função correta agora é chamada aqui
   const { runRetroactiveChecks } = useProgressStore(); 
 
   useEffect(() => {
@@ -42,20 +46,15 @@ function App() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (!hasFetched) {
-        fetchModules();
-      }
-      if (user) {
-        // ✅ CORREÇÃO: A função correta é executada aqui
-        runRetroactiveChecks(user);
-      }
+      if (!hasFetched) fetchModules();
+      if (user) runRetroactiveChecks();
     }
   }, [isAuthenticated, user, hasFetched, fetchModules, runRetroactiveChecks]);
 
   if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-brand-light">
-        <div className="text-center space-y-4"><LoadingSpinner /><p className="text-gray-600 animate-pulse">Carregando plataforma...</p></div>
+        <div className="text-center space-y-4"><LoadingSpinner /><p className="text-gray-600 animate-pulse">Carregando...</p></div>
       </div>
     );
   }
@@ -64,19 +63,41 @@ function App() {
     <Router>
       <AppErrorBoundary>
         <Routes>
+          {/* ROTAS PÚBLICAS */}
           <Route path="/" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
           <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+
+          {/* ROTA DE CONFIGURAÇÃO DE PERFIL */}
           <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetupPage /></ProtectedRoute>} />
+          
+          {/* ROTAS DO PORTAL ADMIN (com seu próprio layout) */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminLayout>
+                <ProtectedRoute requiredRole="admin">
+                  <AdminDashboardPage />
+                </ProtectedRoute>
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminLayout>
+                <ProtectedRoute requiredRole="admin">
+                  <UserManagementPage />
+                </ProtectedRoute>
+              </AdminLayout>
+            }
+          />
+
+          {/* ROTAS PROTEGIDAS DO USUÁRIO (com o layout padrão) */}
           <Route element={<ProtectedRoute><ProfileCheck /></ProtectedRoute>}>
-            <Route path="/inicio" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/boas-vindas" element={<Layout><BoasVindasPage /></Layout>} />
-            <Route path="/nosso-papel-sus" element={<Layout><NossoPapelSusPage /></Layout>} />
-            <Route path="/boas-vindas/quiz" element={<BoasVindasQuizPage />} />
             <Route path="/dashboard" element={<Layout><DashboardPage /></Layout>} />
             <Route path="/modules" element={<Layout><ModulesGridPage /></Layout>} />
-            <Route path="/modules/nossa-historia" element={<Layout><HistoryPage /></Layout>} />
-            <Route path="/modules/:moduleId" element={<Layout><ModulePage /></Layout>} />
-            <Route path="/modules/:moduleId/quiz" element={<QuizPage />} />
+            {/* ...todas as suas outras rotas de usuário aqui... */}
             <Route path="/ranking" element={<Layout><RankingPage /></Layout>} />
             <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
             <Route path="/settings" element={<Layout><SettingsPage /></Layout>} />
@@ -86,7 +107,14 @@ function App() {
             <Route path="/benefits" element={<Layout><ContentPage pageId="beneficios" /></Layout>} />
             <Route path="/communication" element={<Layout><ContentPage pageId="comunicacao" /></Layout>} />
             <Route path="/quem-somos" element={<Layout><ContentPage pageId="quem-somos" /></Layout>} />
+            <Route path="/boas-vindas" element={<Layout><BoasVindasPage /></Layout>} />
+            <Route path="/nosso-papel-sus" element={<Layout><NossoPapelSusPage /></Layout>} />
+            <Route path="/boas-vindas/quiz" element={<BoasVindasQuizPage />} />
+            <Route path="/modules/nossa-historia" element={<Layout><HistoryPage /></Layout>} />
+            <Route path="/modules/:moduleId" element={<Layout><ModulePage /></Layout>} />
+            <Route path="/modules/:moduleId/quiz" element={<QuizPage />} />
           </Route>
+
           <Route path="*" element={<div className="min-h-screen flex items-center justify-center text-center p-4"><div><h1 className="text-4xl font-bold">404 - Página não encontrada</h1><p className="text-gray-500 mt-2">O endereço que você tentou acessar não existe.</p><Link to="/" className="btn-primary mt-6">Voltar ao Início</Link></div></div>} />
         </Routes>
       </AppErrorBoundary>

@@ -20,11 +20,17 @@ export interface QuizAttempt {
   score: number;
 }
 
-// ✅ NOVO: Interface para o feedback detalhado
 export interface OnboardingFeedback {
   rating: number;
   message: string;
   submittedAt: number;
+}
+
+// ✅ ADICIONADO: Interface para os detalhes da conclusão que estava faltando.
+export interface CompletionDetails {
+  completedAt: number;
+  daysToComplete: number;
+  wasOverdue: boolean;
 }
 
 export interface User {
@@ -43,15 +49,16 @@ export interface User {
   createdAt: number;
   lastAccess: number | any;
   profileCompleted: boolean;
-  onboardingCompleted: boolean; // <-- Indica que a trilha foi concluída e o certificado emitido
+  onboardingCompleted: boolean;
   currentRank: number;
   instituteRank: number;
   welcomeModalSeen: boolean;
   tourSeen: boolean;
   personalizations: UserPersonalizations;
 
-  // ✅ NOVO: Objeto para armazenar o feedback detalhado no perfil do usuário
-  onboardingFeedback?: OnboardingFeedback; 
+  // ✅ CORREÇÃO: A tipagem agora aceita `null` para evitar o erro de `undefined`.
+  onboardingFeedback?: OnboardingFeedback | null; 
+  completionDetails?: CompletionDetails | null;
 }
 
 // O restante do arquivo (Module, Notification, etc.) permanece o mesmo...
@@ -190,7 +197,7 @@ export const PROFESSIONS_ARRAY: string[] = [
   "ENFERMEIRO AUDITOR", "ENFERMEIRO CHEFE", "ENFERMEIRO DO TRABALHO", "ENFERMEIRO EDUCACAO CONTINUADA",
   "ENFERMEIRO ENCARREGADO", "ENFERMEIRO PESQUISA", "ENFERMEIRO TRABALHO", "ENGENHEIRO", "ENGENHEIRO (CICLOTRON)",
   "ENGENHEIRO CLINICO", "ENGENHEIRO DE AUTOMACAO", "ENGENHEIRO DE SEGURANCA DO TRABALHO", "ENGENHEIRO I", "ENGENHEIRO IV",
-  "ENGENHEIRO MANUTENCAO", "ENGENHEIRO OBRAS I", "ENGENHEIRO SEGURANCA TRABALHO", "ENGENHEIRO V", "ENGENHEIRO VI",
+  "ENGENHEiro MANUTENCAO", "ENGENHEIRO OBRAS I", "ENGENHEIRO SEGURANCA TRABALHO", "ENGENHEIRO V", "ENGENHEIRO VI",
   "ERGONOMISTA", "ESCRITURARIO", "ESPECIALISTA CONTABIL", "ESPECIALISTA EM PESQUISA/APOIO MUSEU",
   "ESPECIALISTA EM PROJETOS PL", "ESPECIALISTA EM PROJETOS PMO PL", "ESTAGIARIO", "ESTAGIARIO CIEE", "EXECUTIVO PUBLICO",
   "FARMACEUTICO", "FARMACEUTICO CHEFE", "FARMACEUTICO ENCARREGADO", "FARMACEUTICO JR", "FARMACEUTICO ONCOLOGICO",
