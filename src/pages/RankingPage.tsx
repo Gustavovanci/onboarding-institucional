@@ -80,7 +80,7 @@ const RankingPage = () => {
                       <button onClick={() => setSelectedUser(player as User)} className="flex items-center space-x-4 text-left group">
                         <img
                           crossOrigin="anonymous"
-                          referrerPolicy="no-referrer" // <-- CORREÇÃO ADICIONADA
+                          referrerPolicy="no-referrer"
                           src={player.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.displayName)}&background=random`}
                           alt={player.displayName || ''}
                           className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm transition-transform group-hover:scale-110"

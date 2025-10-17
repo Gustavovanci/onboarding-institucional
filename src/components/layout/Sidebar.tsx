@@ -41,7 +41,17 @@ const calculateLevelInfo = (points: number) => {
   return { currentLevel, nextLevel, progress: Math.min(progress, 100), pointsToNextLevel };
 };
 
-const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, onLinkClick?: () => void }) => {
+const SidebarContent = ({ 
+  isCollapsed, 
+  onLinkClick, 
+  onClose, 
+  isMobile 
+}: { 
+  isCollapsed: boolean; 
+  onLinkClick?: () => void; 
+  onClose?: () => void;
+  isMobile?: boolean;
+}) => {
   const { user } = useAuthStore();
   const institutConfig = user && user.instituto ? INSTITUTOS_CONFIG[user.instituto] : null;
 
@@ -55,7 +65,8 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="flex flex-col h-full bg-white/95 backdrop-blur-xl border-r border-gray-200/50 overflow-hidden"
     >
-      <div className="flex items-center justify-center h-20 px-4 border-b border-gray-200/50 flex-shrink-0">
+      {/* Header com botão de fechar no mobile */}
+      <div className="flex items-center justify-between h-20 px-4 border-b border-gray-200/50 flex-shrink-0">
         <div className={`flex items-center space-x-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
           <img
             src={institutConfig?.logo || "/hc/ICHC.png"}
@@ -71,8 +82,20 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
             )}
           </AnimatePresence>
         </div>
+
+        {/* Botão de fechar - apenas mobile */}
+        {isMobile && onClose && (
+          <button 
+            onClick={onClose}
+            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Fechar menu"
+          >
+            <X className="h-6 w-6 text-gray-600" />
+          </button>
+        )}
       </div>
 
+      {/* Card de gamificação */}
       <AnimatePresence>
         {!isCollapsed && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="p-4">
@@ -95,7 +118,8 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
         )}
       </AnimatePresence>
 
-      <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+      {/* Navegação */}
+      <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-4">
         {navigation.map((item) => (
           <NavLink
             key={item.name}
@@ -120,7 +144,7 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
           </NavLink>
         ))}
 
-        {/* ✅ CORREÇÃO: Bloco condicional para renderizar o menu de admin */}
+        {/* Menu Admin */}
         {user && user.role === 'admin' && (
             <>
                 <div className={`px-3 pt-6 pb-2 ${isCollapsed ? 'hidden' : ''}`}>
@@ -152,9 +176,10 @@ const SidebarContent = ({ isCollapsed, onLinkClick }: { isCollapsed: boolean, on
         )}
       </nav>
 
+      {/* Footer */}
       <AnimatePresence>
         {!isCollapsed && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 text-center text-xs text-gray-400 flex-shrink-0">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 text-center text-xs text-gray-400 flex-shrink-0 border-t border-gray-200/50">
             © {new Date().getFullYear()} HCFMUSP
           </motion.div>
         )}
@@ -169,41 +194,57 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* Desktop Sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0 relative">
-        <SidebarContent isCollapsed={isDesktopCollapsed} />
+        <SidebarContent isCollapsed={isDesktopCollapsed} isMobile={false} />
         <button 
           onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
-          className="absolute top-1/2 -right-3 z-10 w-6 h-6 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100"
+          className="absolute top-1/2 -right-3 z-10 w-6 h-6 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
           title={isDesktopCollapsed ? 'Expandir menu' : 'Recolher menu'}
         >
           {isDesktopCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </div>
 
-      <button onClick={() => setIsMobileOpen(true)} className="lg:hidden fixed top-5 left-4 z-50 p-2 bg-white/50 rounded-full backdrop-blur-sm shadow-md">
+      {/* Botão Menu Mobile - sempre visível */}
+      <button 
+        onClick={() => setIsMobileOpen(true)} 
+        className="lg:hidden fixed top-4 left-4 z-[70] p-3 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 border border-gray-200"
+        aria-label="Abrir menu"
+      >
         <Menu className="h-6 w-6 text-gray-800" />
       </button>
 
+      {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isMobileOpen && (
-          <div className="lg:hidden fixed inset-0 z-[60]">
+          <>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               onClick={() => setIsMobileOpen(false)}
-              className="absolute inset-0 bg-black/50"
+              className="lg:hidden fixed inset-0 bg-black/60 z-[80] backdrop-blur-sm"
             />
+            
+            {/* Sidebar */}
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="relative h-full w-64"
+              className="lg:hidden fixed left-0 top-0 bottom-0 w-72 z-[90] shadow-2xl"
             >
-              <SidebarContent isCollapsed={false} onLinkClick={() => setIsMobileOpen(false)} />
+              <SidebarContent 
+                isCollapsed={false} 
+                onLinkClick={() => setIsMobileOpen(false)}
+                onClose={() => setIsMobileOpen(false)}
+                isMobile={true}
+              />
             </motion.div>
-          </div>
+          </>
         )}
       </AnimatePresence>
     </>

@@ -49,7 +49,7 @@ export default function ProfileCardModal({ user, onClose }: ProfileCardModalProp
                 <div className="relative">
                   <img
                     crossOrigin="anonymous"
-                    referrerPolicy="no-referrer" // <-- CORREÇÃO ADICIONADA
+                    referrerPolicy="no-referrer"
                     src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&size=128`}
                     alt={user.displayName}
                     className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg object-cover"

@@ -33,7 +33,7 @@ const ProfilePage = () => {
                 <div className="relative">
                     <img
                         crossOrigin="anonymous"
-                        referrerPolicy="no-referrer" // <-- CORREÇÃO ADICIONADA
+                        referrerPolicy="no-referrer"
                         src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`}
                         alt={user.displayName}
                         className="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg"

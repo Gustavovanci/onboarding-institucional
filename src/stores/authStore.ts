@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { type User, type UserPersonalizations, type Role, type CompletionDetails } from '@/types';
+import { type User, type UserPersonalizations, type Role } from '@/types';
 import { auth, googleProvider, db } from '@/utils/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged, type AuthError, User as FirebaseUser } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
@@ -27,14 +27,11 @@ function normalizeUser(firebaseUser: FirebaseUser, dbData: Partial<User> | undef
     ? new Date(firebaseUser.metadata.creationTime).getTime() 
     : (dbData?.createdAt as any)?.toMillis() ?? Date.now();
 
-  // ✅ CORREÇÃO APLICADA AQUI: Limpa a URL da foto para evitar problemas de CORS
-  const photoURL = firebaseUser.photoURL ? firebaseUser.photoURL.split('=')[0] : null;
-
   return {
     uid: firebaseUser.uid,
     email: firebaseUser.email ?? dbData?.email ?? '',
     displayName: firebaseUser.displayName ?? dbData?.displayName ?? '',
-    photoURL: photoURL ?? dbData?.photoURL ?? null, // Utiliza a URL limpa
+    photoURL: firebaseUser.photoURL ?? dbData?.photoURL ?? null,
     createdAt: creationTime,
     lastAccess: (dbData?.lastAccess as any)?.toMillis?.() ?? dbData?.lastAccess ?? Date.now(),
     role: dbData?.role ?? 'employee',
@@ -99,7 +96,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       await signInWithPopup(auth, googleProvider);
-      // O listener onAuthStateChanged cuidará do resto
     } catch (error) {
       const authError = error as AuthError;
       let msg = 'Ocorreu um erro ao tentar fazer login.';
