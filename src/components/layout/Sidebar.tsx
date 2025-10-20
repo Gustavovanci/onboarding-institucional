@@ -1,29 +1,37 @@
 // src/components/layout/Sidebar.tsx
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { Home, User, TrendingUp, BookOpen, Gift, MessageSquare, Zap, Award, Menu, X, Clock, Heart, Cloud, Info, ChevronLeft, ChevronRight, Shield } from 'lucide-react';
+import { Home, User, TrendingUp, BookOpen, Gift, MessageSquare, Zap, Award, Menu, X, Clock, Heart, Cloud, Info, ChevronLeft, ChevronRight, Shield, HardHat, HandHeart, Send, Laptop } from 'lucide-react';
 import { INSTITUTOS_CONFIG } from '../../types';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LEVELS } from '@/config/gamification';
 
-const navigation = [
+// NOVA ESTRUTURA DE NAVEGAÇÃO
+const navigationTop = [
   { name: 'Início', href: '/dashboard', icon: Home },
-  { name: 'Boas-Vindas', href: '/boas-vindas', icon: Heart },
-  { name: 'Quem Somos', href: '/quem-somos', icon: Info },
-  { name: 'Trilha Institucional', href: '/modules', icon: BookOpen },
-  { name: 'Certificados', href: '/certificates', icon: Award },
-  { name: 'Ranking', href: '/ranking', icon: TrendingUp },
-  { name: 'Nuvem de Ideias', href: '/messages', icon: Cloud },
+  { name: 'Boas Vindas', href: '/boas-vindas', icon: Heart },
+  { name: 'Quem somos', href: '/quem-somos', icon: Info },
+  { name: 'Institucional', href: '/modules', icon: BookOpen },
+  { name: 'Segurança do Trabalho', href: '/seguranca-trabalho', icon: HardHat },
   { name: 'Benefícios', href: '/benefits', icon: Gift },
-  { name: 'Comunicação', href: '/communication', icon: MessageSquare },
+];
+
+const navigationBottom = [
   { name: 'Inova HC', href: '/innovation', icon: Zap },
+  { name: 'Humanização', href: '/humanizacao', icon: HandHeart },
+  { name: 'Certificado', href: '/certificates', icon: Award },
+  { name: 'Nuvem de ideias', href: '/messages', icon: Cloud },
+  { name: 'Ranking', href: '/ranking', icon: TrendingUp },
+  { name: 'Comunicação com RH', href: '/comunicacao-rh', icon: Send },
+  { name: 'Sistema HCFMUSP', href: '/sistemas-hcfmusp', icon: Laptop },
   { name: 'Meu Perfil', href: '/profile', icon: User },
 ];
 
 const adminNavigation = [
     { name: 'Admin Dashboard', href: '/admin/dashboard', icon: Shield },
 ];
+
 
 const calculateLevelInfo = (points: number) => {
   const currentLevel = [...LEVELS].reverse().find(l => points >= l.minPoints) || LEVELS[0];
@@ -58,6 +66,34 @@ const SidebarContent = ({
   if (!user) return null;
 
   const { currentLevel, nextLevel, progress, pointsToNextLevel } = calculateLevelInfo(user.points || 0);
+  
+  // Função auxiliar para renderizar os links
+  const renderNavLinks = (items: typeof navigationTop) => {
+    return items.map((item) => (
+      <NavLink
+        key={item.name}
+        to={item.href}
+        end={['/dashboard', '/boas-vindas', '/quem-somos'].includes(item.href)}
+        onClick={onLinkClick}
+        title={isCollapsed ? item.name : undefined}
+        className={({ isActive }) =>
+          `group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${isCollapsed ? 'justify-center' : ''} ${
+            isActive ? 'bg-brand-azure text-white shadow-md shadow-blue-500/30' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+          }`
+        }
+      >
+        <item.icon className={`flex-shrink-0 w-5 h-5 ${!isCollapsed ? 'mr-3' : ''}`} />
+        <AnimatePresence>
+          {!isCollapsed && (
+            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="whitespace-nowrap">
+              {item.name}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </NavLink>
+    ));
+  };
+
 
   return (
     <motion.div 
@@ -65,7 +101,6 @@ const SidebarContent = ({
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="flex flex-col h-full bg-white/95 backdrop-blur-xl border-r border-gray-200/50 overflow-hidden"
     >
-      {/* Header com botão de fechar no mobile */}
       <div className="flex items-center justify-between h-20 px-4 border-b border-gray-200/50 flex-shrink-0">
         <div className={`flex items-center space-x-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
           <img
@@ -83,7 +118,6 @@ const SidebarContent = ({
           </AnimatePresence>
         </div>
 
-        {/* Botão de fechar - apenas mobile */}
         {isMobile && onClose && (
           <button 
             onClick={onClose}
@@ -95,7 +129,6 @@ const SidebarContent = ({
         )}
       </div>
 
-      {/* Card de gamificação */}
       <AnimatePresence>
         {!isCollapsed && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="p-4">
@@ -118,33 +151,21 @@ const SidebarContent = ({
         )}
       </AnimatePresence>
 
-      {/* Navegação */}
+      {/* Navegação CORRIGIDA */}
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-4">
-        {navigation.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.href}
-            end={['/dashboard', '/boas-vindas', '/quem-somos'].includes(item.href)}
-            onClick={onLinkClick}
-            title={isCollapsed ? item.name : undefined}
-            className={({ isActive }) =>
-              `group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${isCollapsed ? 'justify-center' : ''} ${
-                isActive ? 'bg-brand-azure text-white shadow-md shadow-blue-500/30' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`
-            }
-          >
-            <item.icon className={`flex-shrink-0 w-5 h-5 ${!isCollapsed ? 'mr-3' : ''}`} />
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="whitespace-nowrap">
-                  {item.name}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </NavLink>
-        ))}
+        <div className="space-y-1">
+          {renderNavLinks(navigationTop)}
+        </div>
+        
+        {/* Divisor */}
+        <div className="py-3">
+            <div className={`border-t border-gray-200 ${isCollapsed ? 'mx-2' : 'mx-3'}`}></div>
+        </div>
 
-        {/* Menu Admin */}
+        <div className="space-y-1">
+          {renderNavLinks(navigationBottom)}
+        </div>
+
         {user && user.role === 'admin' && (
             <>
                 <div className={`px-3 pt-6 pb-2 ${isCollapsed ? 'hidden' : ''}`}>
@@ -176,7 +197,6 @@ const SidebarContent = ({
         )}
       </nav>
 
-      {/* Footer */}
       <AnimatePresence>
         {!isCollapsed && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 text-center text-xs text-gray-400 flex-shrink-0 border-t border-gray-200/50">
@@ -194,7 +214,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Desktop Sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0 relative">
         <SidebarContent isCollapsed={isDesktopCollapsed} isMobile={false} />
         <button 
@@ -206,7 +225,6 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* Botão Menu Mobile - sempre visível */}
       <button 
         onClick={() => setIsMobileOpen(true)} 
         className="lg:hidden fixed top-4 left-4 z-[70] p-3 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 border border-gray-200"
@@ -215,11 +233,9 @@ export default function Sidebar() {
         <Menu className="h-6 w-6 text-gray-800" />
       </button>
 
-      {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isMobileOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -229,7 +245,6 @@ export default function Sidebar() {
               className="lg:hidden fixed inset-0 bg-black/60 z-[80] backdrop-blur-sm"
             />
             
-            {/* Sidebar */}
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}

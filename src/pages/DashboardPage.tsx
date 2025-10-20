@@ -8,21 +8,13 @@ import { useAuthStore } from "../stores/authStore";
 import { useModulesStore } from "../stores/modulesStore";
 import useGamificationStore from "../stores/gamificationStore";
 import WelcomeModal from "../components/ui/WelcomeModal";
-import { StaticOnboardingTour } from '../components/ui/StaticOnboardingTour';
+import OnboardingTour from '../components/ui/OnboardingTour';
 import { DeadlineCard } from "../components/dashboard/DeadlineCard";
 import { InstituteRankingCard } from "../components/dashboard/InstituteRankingCard";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import ProfileCard from "../components/dashboard/ProfileCard";
 import { WelcomeHeader } from "../components/dashboard/WelcomeHeader";
 import { INSTITUTOS_CONFIG } from "../types";
-
-const tourImages = [
-  '/tour/passo1.png',
-  '/tour/passo2.png',
-  '/tour/passo3.png',
-  '/tour/passo4.png',
-  '/tour/passo5.png',
-];
 
 export default function DashboardPage() {
   const { user, updateUserProfile } = useAuthStore();
@@ -35,12 +27,10 @@ export default function DashboardPage() {
   const [startTour, setStartTour] = useState(false);
 
   useEffect(() => {
-    // ✅ ESTA É A LÓGICA CORRETA:
-    // A única responsabilidade deste efeito é mostrar o modal se ele nunca foi visto.
     if (user && !user.welcomeModalSeen) {
       const timer = setTimeout(() => {
         setShowWelcomeModal(true);
-      }, 500); // Um pequeno delay para a transição de tela
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [user, user?.welcomeModalSeen]);
@@ -74,13 +64,11 @@ export default function DashboardPage() {
 
   const handleModalClose = (shouldStartTour = false) => {
     setShowWelcomeModal(false);
-    // ✅ LÓGICA CORRETA: a flag 'welcomeModalSeen' só é marcada como true DEPOIS que o modal é fechado.
     if (user && !user.welcomeModalSeen) {
       updateUserProfile({ welcomeModalSeen: true }).then(() => {
         if (shouldStartTour && !user.tourSeen) {
           setTimeout(() => setStartTour(true), 300);
         } else if (!shouldStartTour) {
-           // Se o usuário clicar em "Começar Agora", redireciona para o treinamento
            navigate('/boas-vindas');
         }
       });
@@ -92,7 +80,6 @@ export default function DashboardPage() {
     if (user && !user.tourSeen) {
       updateUserProfile({ tourSeen: true });
     }
-    // Após fechar o tour, navega para a página de boas-vindas
     navigate('/boas-vindas');
   };
 
@@ -115,10 +102,9 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
-      <StaticOnboardingTour
-        isOpen={startTour}
-        onClose={handleTourClose}
-        images={tourImages}
+      <OnboardingTour
+        run={startTour}
+        onFinish={handleTourClose}
       />
 
       <div className="space-y-8">

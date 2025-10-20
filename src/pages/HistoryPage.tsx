@@ -33,7 +33,7 @@ export default function HistoryPage() {
         
         <div className="max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-gray-200/80">
           <VideoPlayer 
-            youtubeUrl="https://www.youtube.com/watch?v=SErc_d_tB2I" 
+            youtubeUrl="https://www.youtube.com/watch?v=l3ORGRlZXvQ" 
             title="Vídeo Institucional HCFMUSP"
           />
         </div>

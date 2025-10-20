@@ -2,7 +2,7 @@
 import { LogIn, Shield, ArrowDown, BookOpen, Award, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom'; // Importação do Link
+import { Link } from 'react-router-dom';
 
 // Variantes de animação para os textos e cards
 const containerVariants = {
@@ -37,10 +37,12 @@ const LoginPage = () => {
         className="min-h-screen flex flex-col items-center justify-center text-center p-6 relative overflow-hidden"
       >
         <div 
-          className="absolute inset-0 bg-cover bg-center z-0"
-          style={{ backgroundImage: "url('/fundo_backdropv2.png')" }}
+          className="absolute inset-0 z-0"
+          style={{
+            background: 'linear-gradient(135deg, #FF4D3D 0%, #FF4D3D 33%, #4CA8E8 33%, #4CA8E8 66%, #2D9B6C 66%, #2D9B6C 100%)'
+          }}
         >
-          <div className="absolute inset-0 bg-brand-green3/70"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/30"></div>
         </div>
 
         <motion.div 
@@ -53,21 +55,20 @@ const LoginPage = () => {
             variants={itemVariants}
             src="/hc/HCFMUSP.png" 
             alt="HCFMUSP Logo" 
-            className="w-40 md:w-48 mb-6 brightness-0 invert"
+            className="w-40 md:w-48 mb-6 drop-shadow-2xl"
           />
           <motion.h1 
             variants={itemVariants}
             className="text-4xl md:text-6xl font-extrabold leading-tight text-white"
             style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
           >
-            Sua Jornada no HCFMUSP Começa Aqui
+            Bem-vindos ao Maior Complexo Hospitalar da América Latina 
           </motion.h1>
           <motion.p 
             variants={itemVariants}
             className="mt-4 text-lg md:text-xl text-white/90 max-w-2xl mx-auto"
             style={{ textShadow: '0 1px 5px rgba(0,0,0,0.5)' }}
           >
-            Bem-vindo(a) à plataforma de Onboarding Digital. Um espaço interativo para integrar, aprender e crescer conosco desde o primeiro dia.
           </motion.p>
         </motion.div>
 
@@ -91,24 +92,24 @@ const LoginPage = () => {
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          <h2 className="text-center text-3xl md:text-4xl font-bold text-brand-green3 mb-12">
+          <h2 className="text-center text-3xl md:text-4xl font-bold text-gray-800 mb-12">
             Uma Plataforma Completa para sua Integração
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-brand-azure text-white rounded-2xl flex items-center justify-center mx-auto mb-4"><BookOpen size={32} /></div>
-              <h3 className="text-xl font-bold text-brand-green3 mb-2">Trilhas de Aprendizagem</h3>
-              <p>Explore módulos essenciais sobre nossa cultura, procedimentos e valores de forma guiada e interativa.</p>
+            <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#FF4D3D] to-[#FF6B5D] text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"><BookOpen size={32} /></div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Trilhas de Aprendizagem</h3>
+              <p className="text-gray-600">Explore módulos essenciais sobre nossa cultura, procedimentos e valores de forma guiada e interativa.</p>
             </motion.div>
-            <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-brand-green1 text-white rounded-2xl flex items-center justify-center mx-auto mb-4"><Award size={32} /></div>
-              <h3 className="text-xl font-bold text-brand-green3 mb-2">Gamificação e Reconhecimento</h3>
-              <p>Ganhe pontos, conquiste badges e acompanhe seu progresso nos rankings do seu instituto e geral.</p>
+            <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#4CA8E8] to-[#3B8FD1] text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"><Award size={32} /></div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Gamificação e Reconhecimento</h3>
+              <p className="text-gray-600">Ganhe pontos, conquiste badges e acompanhe seu progresso nos rankings do seu instituto e geral.</p>
             </motion.div>
-            <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-brand-red text-white rounded-2xl flex items-center justify-center mx-auto mb-4"><TrendingUp size={32} /></div>
-              <h3 className="text-xl font-bold text-brand-green3 mb-2">Conecte-se com o HC</h3>
-              <p>Conheça a história do maior complexo hospitalar da América Latina e seu papel fundamental no SUS.</p>
+            <motion.div variants={itemVariants} className="text-center p-6 border border-gray-200 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#2D9B6C] to-[#1F7A52] text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"><TrendingUp size={32} /></div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Conecte-se com o HC</h3>
+              <p className="text-gray-600">Conheça a história do maior complexo hospitalar da América Latina e seu papel fundamental no SUS.</p>
             </motion.div>
           </div>
         </motion.div>
@@ -123,7 +124,7 @@ const LoginPage = () => {
           viewport={{ once: true, amount: 0.5 }}
           variants={containerVariants}
         >
-            <motion.h2 variants={itemVariants} className="text-3xl font-bold text-brand-green3 mb-4">Pronto para começar?</motion.h2>
+            <motion.h2 variants={itemVariants} className="text-3xl font-bold text-gray-800 mb-4">Pronto para começar?</motion.h2>
             <motion.p variants={itemVariants} className="text-gray-600 mb-8">
                 Clique no botão abaixo para fazer o login com seu e-mail institucional e dar o primeiro passo na sua jornada.
             </motion.p>
@@ -131,7 +132,7 @@ const LoginPage = () => {
                 variants={itemVariants}
                 onClick={loginWithGoogle}
                 disabled={isLoading}
-                className="bg-brand-red hover:opacity-90 text-white font-bold rounded-2xl text-lg transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 p-5 px-10 flex items-center justify-center space-x-3 disabled:opacity-70 w-full"
+                className="bg-gradient-to-r from-[#FF4D3D] to-[#FF6B5D] hover:from-[#FF3D2D] hover:to-[#FF5B4D] text-white font-bold rounded-2xl text-lg transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 p-5 px-10 flex items-center justify-center space-x-3 disabled:opacity-70 w-full"
             >
                 {isLoading ? (
                     <div className="w-6 h-6 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
@@ -146,7 +147,7 @@ const LoginPage = () => {
       </section>
 
       {/* Rodapé com o link de Admin */}
-      <footer className="bg-brand-green3 text-white/80 p-6">
+      <footer className="bg-gradient-to-r from-[#2D9B6C] to-[#1F7A52] text-white/80 p-6">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
             <div>
                 <p className="text-sm">© {new Date().getFullYear()} Hospital das Clínicas da FMUSP. Todos os direitos reservados.</p>

@@ -8,10 +8,11 @@ import { useModulesStore } from "./modulesStore";
 import { differenceInDays } from "date-fns";
 import { v4 as uuidv4 } from 'uuid';
 import { LEVELS } from "@/config/gamification";
-import useNotificationStore from "./notificationStore"; // ✅ IMPORTAÇÃO ADICIONADA
+import useNotificationStore from "./notificationStore";
 
 export const availableBadges: Badge[] = [
   { id: "checkin-hc", name: "Iniciante HC", description: "Concluiu a jornada de boas-vindas e fez seu check-in na plataforma.", icon: "✅", category: "special", points: 100 },
+  { id: "quiz-quem-somos", name: "Conhecedor Institucional", description: "Completou o quiz da página Quem Somos.", icon: "🧭", category: "special", points: 50 },
   { id: "first-module", name: "Primeiro Passo", description: "Complete seu primeiro módulo da trilha institucional", icon: "🎯", category: "completion", points: 50 },
   { id: "onboarding-sprint", name: "Maratonista", description: "Concluiu o onboarding em 7 dias ou menos.", icon: "🏃‍♂️", category: "special", points: 250 },
   { id: "mago-hc", name: "Mago HC", description: "Atingiu o nível máximo de conhecimento no Onboarding.", icon: "🧙‍♂️", category: "special", points: 0 },
@@ -158,12 +159,11 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
       const certRef = doc(collection(db, "certificates"));
       await setDoc(certRef, { userId: user.uid, moduleId: "trilha-institucional-completa", moduleTitle: "Conclusão da Trilha Institucional", completionDate: completionTime, certificateNumber: uuidv4() });
       
-      // ✅ ADIÇÃO: Envia a notificação sobre o certificado.
       useNotificationStore.getState().addNotification({
         userId: user.uid,
         message: 'Parabéns! Seu certificado de conclusão da trilha já está disponível para download.',
         link: '/certificates',
-        type: 'badge_earned', // Reutilizando um tipo existente
+        type: 'badge_earned',
         read: false,
       });
       

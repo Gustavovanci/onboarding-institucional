@@ -63,8 +63,8 @@ export default function BoasVindasPage() {
         </div>
       </div>
 
-      {/* CORREÇÃO: O botão "Avançar" é sempre visível aqui */}
       <div className="text-center pt-8">
+        {/* O botão "Avançar" agora leva para a página do vídeo do SUS */}
         <Link to="/nosso-papel-sus" className="btn-primary text-lg px-10 py-4">
           Avançar
         </Link>

@@ -1,10 +1,10 @@
 // src/pages/BoasVindasQuizPage.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useProgressStore } from '../stores/progressStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Award } from 'lucide-react';
 
 const quizQuestions = [
     {
@@ -25,94 +25,156 @@ export default function BoasVindasQuizPage() {
     const navigate = useNavigate();
     const { user } = useAuthStore();
     const { awardBadgeAndPoints, isLoading } = useProgressStore();
+
+    const badgeId = 'checkin-hc';
+    const isCompleted = user?.badges.includes(badgeId);
+
     const [answers, setAnswers] = useState<(number | null)[]>(new Array(quizQuestions.length).fill(null));
-    const [showResults, setShowResults] = useState(false);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [quizFinished, setQuizFinished] = useState(false);
+    const [showFeedback, setShowFeedback] = useState(false);
 
-    const hasCompletedCheckin = user?.badges.includes('checkin-hc');
-
-    const handleAnswer = (qIndex: number, aIndex: number) => {
-        if (showResults) return;
+    const handleAnswer = (optionIndex: number) => {
+        if (showFeedback) return;
         const newAnswers = [...answers];
-        newAnswers[qIndex] = aIndex;
+        newAnswers[currentQuestionIndex] = optionIndex;
         setAnswers(newAnswers);
+        setShowFeedback(true); // Mostra o feedback assim que a resposta é selecionada
     };
 
-    const handleSubmit = async () => {
-        if (answers.some(a => a === null)) {
-            alert('Por favor, responda todas as perguntas.');
-            return;
-        }
-        
-        setShowResults(true);
-        
-        const isCorrect = answers.every((ans, i) => ans === quizQuestions[i].correct);
+    const handleNext = async () => {
+        if (!showFeedback) return;
 
-        if (!hasCompletedCheckin && isCorrect) {
-            await awardBadgeAndPoints(user!.uid, 'checkin-hc');
-        }
+        setShowFeedback(false);
 
-        // CORREÇÃO: Redireciona de volta para a página do vídeo do SUS
-        setTimeout(() => {
-            navigate('/nosso-papel-sus');
-        }, 4000);
+        if (currentQuestionIndex < questions.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+        } else {
+            setQuizFinished(true);
+            const score = answers.reduce((acc, answer, index) => (answer === quizQuestions[index]?.correct ? acc + 1 : acc), 0);
+            const passed = score / questions.length >= 0.7; // Usa uma taxa de acerto de 70%
+
+            if (passed && !isCompleted) {
+                // Concede o badge apenas na primeira vez que passa
+                await awardBadgeAndPoints(user!.uid, badgeId, 'boas-vindas');
+            }
+            // Se passou, espera para mostrar o resultado e depois redireciona
+            if(passed) {
+                setTimeout(() => {
+                    navigate('/quem-somos');
+                }, 2000);
+            }
+        }
     };
     
-    if (hasCompletedCheckin && !showResults) {
-        navigate('/nosso-papel-sus');
-        return null;
+    useEffect(() => {
+        if (isCompleted) {
+            navigate('/quem-somos');
+        }
+    }, [isCompleted, navigate]);
+
+    const score = answers.reduce((acc, answer, index) => (answer === quizQuestions[index]?.correct ? acc + 1 : acc), 0);
+    const percentage = quizFinished ? (score / questions.length) * 100 : 0;
+    const passed = percentage >= 70;
+
+    if (quizFinished) {
+        return (
+             <div 
+                className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
+                style={{ backgroundImage: "url('/fundo_backdropv2.jpg')" }}
+            >
+                <div className="absolute inset-0 bg-brand-green3/80"></div>
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative max-w-2xl mx-auto text-center p-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border">
+                    <Award className={`w-20 h-20 mx-auto ${passed ? 'text-brand-green1' : 'text-brand-red'}`} />
+                    <h2 className="text-3xl font-bold mt-4">{passed ? 'Parabéns!' : 'Tente novamente!'}</h2>
+                    {passed ? (
+                         <p className="text-gray-600 mt-2">Você concluiu esta etapa! Redirecionando para o próximo passo...</p>
+                    ) : (
+                         <p className="text-gray-600 mt-2">Você não atingiu a pontuação mínima (70%). Estude o conteúdo e tente novamente para ganhar seus pontos.</p>
+                    )}
+                    <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                    {!passed && (
+                        <button onClick={() => window.location.reload()} className="btn-primary w-full">
+                            Tentar Novamente
+                        </button>
+                    )}
+                    </div>
+                </motion.div>
+            </div>
+       )
     }
 
+    const question = questions[currentQuestionIndex];
+    
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-8 flex items-center justify-center">
-            <div className="max-w-3xl w-full">
-                <h1 className="text-3xl font-bold text-center mb-8">Quiz Boas-Vindas</h1>
-                <div className="space-y-8">
-                    {quizQuestions.map((q, qIndex) => (
-                        <div key={qIndex} className="card-elevated p-6">
-                            <p className="font-semibold text-lg">{qIndex + 1}. {q.question}</p>
-                            <div className="mt-4 space-y-3">
-                                {q.options.map((option, aIndex) => {
-                                    const isSelected = answers[qIndex] === aIndex;
-                                    const isCorrect = q.correct === aIndex;
-                                    let stateClasses = 'border-gray-300 hover:border-brand-azure hover:bg-blue-50';
-                                    if(showResults){
-                                        if(isCorrect) stateClasses = 'bg-green-100 border-green-500 text-green-800 font-semibold';
-                                        else if(isSelected) stateClasses = 'bg-red-100 border-red-500 text-red-800';
-                                    } else if (isSelected) {
-                                        stateClasses = 'bg-blue-100 border-brand-azure';
-                                    }
-
-                                    return (
-                                    <button 
-                                        key={aIndex} 
-                                        onClick={() => handleAnswer(qIndex, aIndex)}
-                                        disabled={showResults}
-                                        className={`w-full text-left p-4 border-2 rounded-lg transition-all flex items-center justify-between ${stateClasses}`}
-                                    >
-                                        <span>{option}</span>
-                                        {showResults && isCorrect && <CheckCircle className="w-5 h-5 text-green-600" />}
-                                        {showResults && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-red-600" />}
-                                    </button>
-                                )})}
-                            </div>
-                            <AnimatePresence>
-                                {showResults && (
-                                    <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} className="mt-4 p-3 bg-gray-100 rounded-lg text-sm">
-                                        <strong>Feedback:</strong> {q.explanation}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+        <div 
+            className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
+            style={{ backgroundImage: "url('/fundo_backdropv2.jpg')" }}
+        >
+            <div className="absolute inset-0 bg-brand-green3/50"></div>
+            <div className="relative max-w-2xl mx-auto w-full">
+                <AnimatePresence mode="wait">
+                    <motion.div 
+                        key={currentQuestionIndex} 
+                        initial={{ opacity: 0, y: 20 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        exit={{ opacity: 0, y: -20 }} 
+                        transition={{ duration: 0.3 }} 
+                        className="bg-white/90 backdrop-blur-sm p-6 sm:p-8 rounded-2xl shadow-xl border"
+                    >
+                        <p className="text-sm font-semibold text-brand-azure">Questão {currentQuestionIndex + 1} de {questions.length}</p>
+                        <h2 className="text-xl sm:text-2xl font-bold mt-2 text-brand-dark">{question.question}</h2>
+                        <div className="mt-6 space-y-3">
+                            {question.options.map((option, index) => {
+                                const isSelected = answers[currentQuestionIndex] === index;
+                                const isCorrect = question.correct === index;
+                                let stateClasses = 'border-gray-300 hover:border-brand-azure hover:bg-blue-50';
+                                if (showFeedback) {
+                                    if (isCorrect) stateClasses = 'bg-green-100 border-brand-green1 text-brand-green1 font-semibold';
+                                    else if (isSelected) stateClasses = 'bg-red-100 border-brand-red text-brand-red font-semibold';
+                                    else stateClasses = 'border-gray-300 opacity-60';
+                                } else if (isSelected) {
+                                    stateClasses = 'bg-blue-100 border-brand-azure';
+                                }
+                                return (
+                                <motion.button 
+                                    key={index} 
+                                    onClick={() => handleAnswer(index)} 
+                                    disabled={showFeedback} 
+                                    className={`w-full text-left p-4 border-2 rounded-lg transition-all duration-200 flex items-center justify-between disabled:cursor-not-allowed ${stateClasses}`}
+                                >
+                                    <span>{option}</span>
+                                    {showFeedback && isCorrect && <CheckCircle className="w-5 h-5" />}
+                                    {showFeedback && isSelected && !isCorrect && <XCircle className="w-5 h-5" />}
+                                </motion.button>
+                                );
+                            })}
                         </div>
-                    ))}
-                </div>
-                <div className="mt-8 text-center">
-                    <button onClick={handleSubmit} disabled={isLoading || showResults} className="btn-primary text-lg w-full sm:w-auto disabled:opacity-50">
-                        {isLoading ? 'Aguarde...' : 'Finalizar Quiz'}
-                    </button>
-                    {showResults && (
-                        <p className="text-sm text-gray-500 mt-4 animate-pulse">Você será redirecionado em instantes...</p>
-                    )}
-                </div>
+                        <AnimatePresence>
+                        {showFeedback && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }} 
+                                animate={{ opacity: 1, y: 0 }} 
+                                transition={{ delay: 0.2 }} 
+                                className="mt-4"
+                            >
+                                <div className="p-3 bg-gray-100 rounded-lg text-sm text-gray-700">
+                                    <strong>Feedback:</strong> {question.explanation}
+                                </div>
+                                <div className="mt-4 text-right">
+                                    <button 
+                                        onClick={handleNext} 
+                                        disabled={isLoading} 
+                                        className="btn-primary disabled:opacity-50"
+                                    >
+                                        {isLoading ? 'Aguarde...' : currentQuestionIndex < questions.length - 1 ? 'Próxima' : 'Finalizar'}
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+                        </AnimatePresence>
+                    </motion.div>
+                </AnimatePresence>
             </div>
         </div>
     );

@@ -1,18 +1,20 @@
 // src/pages/SettingsPage.tsx
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Building, Briefcase, Save, Clock, User as UserIcon, Palette, Smile, Star } from "lucide-react";
+import { Building, Briefcase, Save, Clock, User as UserIcon, Palette, Smile, Star, Compass } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { INSTITUTOS_ARRAY, PROFESSIONS_ARRAY, type Instituto, INSTITUTOS_CONFIG } from "@/types";
 import { COLOR_THEMES, STATUS_EMOJIS, CUSTOM_TITLES } from "@/config/personalization";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/utils/firebase";
+import  OnboardingTour  from '../components/ui/OnboardingTour';
 
 const SettingsPage = () => {
   const { user, updateUserProfile } = useAuthStore();
   const [isSaving, setIsSaving] = useState(false);
   const [changeRequested, setChangeRequested] = useState(false);
+  const [showTour, setShowTour] = useState(false); // ADICIONADO
 
   const [formData, setFormData] = useState({
     displayName: user?.displayName || "",
@@ -77,7 +79,6 @@ const SettingsPage = () => {
     return <div className="flex justify-center items-center h-full"><LoadingSpinner /></div>;
   }
   
-  // Dados para a pré-visualização em tempo real
   const theme = COLOR_THEMES.find(t => t.id === formData.colorTheme) || COLOR_THEMES[0];
   const emoji = STATUS_EMOJIS.find(e => e.id === formData.statusEmoji) || STATUS_EMOJIS[0];
   const title = CUSTOM_TITLES.find(t => t.id === formData.customTitle) || CUSTOM_TITLES[0];
@@ -138,6 +139,34 @@ const SettingsPage = () => {
                     </select>
                   </div>
                 </div>
+
+                {/* Seção Tour Guiado ADICIONADA */}
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="font-semibold text-gray-800 text-lg mb-4 flex items-center gap-2">
+                    <Compass className="w-5 h-5 text-brand-azure" />
+                    Tour da Plataforma
+                  </h3>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="text-4xl">🧭</div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-800 mb-2">Tour Guiado Interativo</h4>
+                        <p className="text-sm text-gray-600 mb-3">
+                          Refaça o tour completo da plataforma para relembrar onde estão as principais funcionalidades.
+                          Demora apenas 2 minutos!
+                        </p>
+                        <button
+                          onClick={() => setShowTour(true)}
+                          className="flex items-center gap-2 bg-brand-azure text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity font-semibold text-sm"
+                        >
+                          <Compass className="w-4 h-4" />
+                          Iniciar Tour Novamente
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
               {/* Coluna de Pré-visualização */}
@@ -167,7 +196,6 @@ const SettingsPage = () => {
                             </div>
                         </div>
                     </div>
-                    {/* CORREÇÃO: Pré-visualização da Bio adicionada */}
                     <div className="p-4">
                         {formData.bio ? (
                             <p className="text-center text-sm text-gray-600 italic">"{formData.bio}"</p>
@@ -191,6 +219,11 @@ const SettingsPage = () => {
             </div>
         </div>
       </div>
+      {/* Componente do Tour ADICIONADO */}
+      <OnboardingTour
+        run={showTour}
+        onFinish={() => setShowTour(false)}
+      />
     </motion.div>
   );
 };
