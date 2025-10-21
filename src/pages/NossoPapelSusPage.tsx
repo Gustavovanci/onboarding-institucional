@@ -15,7 +15,8 @@ export default function NossoPapelSusPage() {
                 <p className="mt-2 text-lg text-gray-600">Entenda como funciona o acesso dos pacientes ao Complexo HC.</p>
 
                 <div className="card-elevated p-4">
-                    <VideoPlayer youtubeUrl="https://www.youtube.com/watch?v=SErc_d_tB2I" title="Como funciona o acesso dos pacientes SUS ao HC?" />
+                    <VideoPlayer youtubeUrl="https://www.youtube.com/watch?v=vgB9iSK3Q-o" title="Como funciona o acesso dos pacientes SUS ao HC?" />
+                    
                 </div>
 
                 <div className="pt-8">

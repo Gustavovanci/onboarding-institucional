@@ -55,11 +55,11 @@ export default function BoasVindasPage() {
         <h2 className="text-3xl font-bold text-center text-gray-800">Mensagens Especiais</h2>
         <div>
             <h3 className="text-xl font-semibold mb-4 text-center">O que dizem os nossos Gestores?</h3>
-            <VideoPlayer youtubeUrl="https://www.youtube.com/watch?v=SErc_d_tB2I" title="O que dizem os nossos Gestores?" />
+            <VideoPlayer youtubeUrl="https://www.youtube.com/watch?v=WJkE2WWeY8s" title="O que dizem os nossos Gestores?" />
         </div>
         <div>
             <h3 className="text-xl font-semibold mb-4 text-center">O que dizem os colaboradores?</h3>
-            <VideoPlayer youtubeUrl="https://www.youtube.com/watch?v=SErc_d_tB2I" title="O que dizem os colaboradores?" />
+            <VideoPlayer youtubeUrl="https://www.youtube.com/watch?v=vdrFeagBeWc" title="O que dizem os colaboradores?" />
         </div>
       </div>
 
