@@ -1,10 +1,16 @@
-// src/components/dashboard/InstituteRankingCard.tsx
 import { useEffect } from 'react';
 import useGamificationStore from '../../stores/gamificationStore';
 import { useAuthStore } from '../../stores/authStore';
 import { Trophy } from 'lucide-react';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { Link } from 'react-router-dom';
+
+// ✅ Função de proteção de imagem (não altera comportamento lógico)
+const cleanPhotoURL = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  // Remove parâmetros de tamanho e tokens expiráveis do Google
+  return url.split('=')[0];
+};
 
 export const InstituteRankingCard = () => {
   const { user } = useAuthStore();
@@ -31,27 +37,60 @@ export const InstituteRankingCard = () => {
           <p className="text-xs text-gray-500">Ranking do seu instituto</p>
         </div>
       </div>
+
       {isLoading && leaderboard.length === 0 ? (
-        <div className="flex justify-center items-center h-40"><LoadingSpinner /></div>
+        <div className="flex justify-center items-center h-40">
+          <LoadingSpinner />
+        </div>
       ) : (
         <div className="flex flex-col h-full">
           <ul className="space-y-2 flex-grow">
-            {leaderboard.length > 0 ? leaderboard.slice(0, 5).map((player, index) => (
-              <li key={player.uid} className={`flex items-center justify-between p-2 rounded-lg ${player.uid === user.uid ? 'bg-yellow-200/80' : ''}`}>
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-sm w-5 text-center text-yellow-800">{index + 1}</span>
-                  <img 
-                    crossOrigin="anonymous"
-                    src={player.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.displayName)}`} 
-                    alt={player.displayName} className="w-8 h-8 rounded-full" 
-                   />
-                  <span className="text-sm font-semibold text-gray-700 truncate max-w-[120px] sm:max-w-none">{player.displayName}</span>
-                </div>
-                <span className="text-sm font-bold text-yellow-800">{player.points} pts</span>
-              </li>
-            )) : <p className="text-sm text-center text-gray-500 pt-8">Ainda não há ranking para este instituto.</p>}
+            {leaderboard.length > 0 ? (
+              leaderboard.slice(0, 5).map((player, index) => {
+                const cleanedPhotoURL = cleanPhotoURL(player.photoURL);
+                const fallbackURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.displayName)}&background=random`;
+
+                return (
+                  <li
+                    key={player.uid}
+                    className={`flex items-center justify-between p-2 rounded-lg ${
+                      player.uid === user.uid ? 'bg-yellow-200/80' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-sm w-5 text-center text-yellow-800">
+                        {index + 1}
+                      </span>
+                      <img
+                        crossOrigin="anonymous"
+                        src={cleanedPhotoURL || fallbackURL}
+                        alt={player.displayName}
+                        className="w-8 h-8 rounded-full object-cover border border-white shadow-sm"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.currentTarget.src = fallbackURL;
+                        }}
+                      />
+                      <span className="text-sm font-semibold text-gray-700 truncate max-w-[120px] sm:max-w-none">
+                        {player.displayName}
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-yellow-800">{player.points} pts</span>
+                  </li>
+                );
+              })
+            ) : (
+              <p className="text-sm text-center text-gray-500 pt-8">
+                Ainda não há ranking para este instituto.
+              </p>
+            )}
           </ul>
-          <Link to="/ranking" className="block text-center mt-auto pt-4 text-yellow-700 font-semibold hover:underline">Ver ranking completo</Link>
+          <Link
+            to="/ranking"
+            className="block text-center mt-auto pt-4 text-yellow-700 font-semibold hover:underline"
+          >
+            Ver ranking completo
+          </Link>
         </div>
       )}
     </div>

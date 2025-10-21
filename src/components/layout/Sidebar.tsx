@@ -1,11 +1,11 @@
 // src/components/layout/Sidebar.tsx
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { Home, User, TrendingUp, BookOpen, Gift, MessageSquare, Zap, Award, Menu, X, Clock, Heart, Cloud, Info, ChevronLeft, ChevronRight, Shield, HardHat, HandHeart, Send, Laptop } from 'lucide-react';
+import { Home, User, TrendingUp, BookOpen, Gift, MessageSquare, Zap, Award, Menu, X, Clock, Heart, Cloud, Info, ChevronLeft, ChevronRight, Shield, HardHat, HandHeart, Send, Laptop, BookText } from 'lucide-react';
 import { INSTITUTOS_CONFIG } from '../../types';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LEVELS } from '@/config/gamification';
+import { LEVELS } from '../../config/gamification';
 
 // NOVA ESTRUTURA DE NAVEGAÇÃO
 const navigationTop = [
@@ -15,6 +15,7 @@ const navigationTop = [
   { name: 'Institucional', href: '/modules', icon: BookOpen },
   { name: 'Segurança do Trabalho', href: '/seguranca-trabalho', icon: HardHat },
   { name: 'Benefícios', href: '/benefits', icon: Gift },
+  { name: 'Guias de Conduta', href: '/guias-conduta', icon: BookText }, // ✅ Adicionado aqui
 ];
 
 const navigationBottom = [
@@ -151,13 +152,11 @@ const SidebarContent = ({
         )}
       </AnimatePresence>
 
-      {/* Navegação CORRIGIDA */}
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-4">
         <div className="space-y-1">
           {renderNavLinks(navigationTop)}
         </div>
         
-        {/* Divisor */}
         <div className="py-3">
             <div className={`border-t border-gray-200 ${isCollapsed ? 'mx-2' : 'mx-3'}`}></div>
         </div>
@@ -265,3 +264,4 @@ export default function Sidebar() {
     </>
   )
 }
+

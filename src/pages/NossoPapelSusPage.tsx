@@ -6,7 +6,6 @@ import { CheckCircle } from 'lucide-react';
 
 export default function NossoPapelSusPage() {
     const { user } = useAuthStore();
-    // A lógica para verificar a conclusão do quiz continua aqui para mostrar o status correto
     const isCompleted = user?.badges.includes('checkin-hc');
 
     return (
@@ -19,12 +18,11 @@ export default function NossoPapelSusPage() {
                     <VideoPlayer youtubeUrl="https://www.youtube.com/watch?v=SErc_d_tB2I" title="Como funciona o acesso dos pacientes SUS ao HC?" />
                 </div>
 
-                {/* O botão agora sempre leva para a página de quiz */}
                 <div className="pt-8">
                     {isCompleted ? (
                         <div className="inline-flex items-center space-x-2 bg-green-100 text-green-700 font-semibold px-6 py-3 rounded-xl">
                             <CheckCircle className="w-6 h-6" />
-                            <span>Módulo Concluído!</span>
+                            <span>Quiz já respondido!</span>
                         </div>
                     ) : (
                         <Link to="/boas-vindas/quiz" className="btn-primary text-lg px-10 py-4">

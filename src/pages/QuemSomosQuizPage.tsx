@@ -53,32 +53,54 @@ export default function QuemSomosQuizPage() {
     const handleNext = async () => {
         if (answers[currentQuestionIndex] === null) return;
 
-        if (currentQuestionIndex < questions.length - 1) {
+        if (currentQuestionIndex < quizQuestions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
         } else {
             setQuizFinished(true);
             const allCorrect = answers.every((ans, i) => ans === quizQuestions[i].correct);
             if (allCorrect && !isCompleted) {
-                await awardBadgeAndPoints(user!.uid, badgeId, 'quem-somos');
+                await awardBadgeAndPoints(user!.uid, badgeId);
                  setTimeout(() => {
-                    navigate('/dashboard'); // REDIRECIONA PARA O DASHBOARD
+                    navigate('/modules', { replace: true });
                 }, 3000);
             } else if (allCorrect && isCompleted) {
                 setTimeout(() => {
-                    navigate('/dashboard');
+                    navigate('/modules', { replace: true });
                 }, 3000);
             }
         }
     };
     
-    useEffect(() => {
-        if (isCompleted) {
-            navigate('/dashboard');
-        }
-    }, [isCompleted, navigate]);
+    // REMOVIDO o useEffect que causava o redirecionamento automático
+    // useEffect(() => {
+    //     if (isCompleted) {
+    //         navigate('/modules', { replace: true });
+    //     }
+    // }, [isCompleted, navigate]);
 
     const score = answers.reduce((acc, answer, index) => (answer === quizQuestions[index]?.correct ? acc + 1 : acc), 0);
-    const passed = score === questions.length;
+    const passed = score === quizQuestions.length;
+
+    // ADICIONADA: Tela para usuários que já completaram o quiz
+    if (isCompleted && !quizFinished) {
+        return (
+            <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative max-w-2xl mx-auto text-center p-8 bg-white rounded-2xl shadow-xl border">
+                    <CheckCircle className="w-20 h-20 mx-auto text-brand-green1" />
+                    <h2 className="text-3xl font-bold mt-4">Etapa Concluída!</h2>
+                    <p className="text-gray-600 mt-2">Você já completou este quiz. Continue sua jornada ou reveja o conteúdo.</p>
+                    <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                        <button onClick={() => navigate('/quem-somos')} className="btn-secondary w-full">
+                            Rever Conteúdo
+                        </button>
+                        <button onClick={() => navigate('/modules')} className="btn-primary w-full">
+                            Ir para Trilha
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        )
+    }
 
     if (quizFinished) {
         return (
@@ -87,7 +109,7 @@ export default function QuemSomosQuizPage() {
                     <Award className={`w-20 h-20 mx-auto ${passed ? 'text-brand-green1' : 'text-brand-red'}`} />
                     <h2 className="text-3xl font-bold mt-4">{passed ? 'Parabéns!' : 'Tente novamente!'}</h2>
                     {passed ? (
-                         <p className="text-gray-600 mt-2">Você acertou tudo! Redirecionando para o seu Dashboard...</p>
+                         <p className="text-gray-600 mt-2">Você acertou tudo! Redirecionando para a Trilha Institucional...</p>
                     ) : (
                          <p className="text-gray-600 mt-2">Você não atingiu a pontuação necessária. Estude o conteúdo e tente de novo.</p>
                     )}
@@ -103,14 +125,14 @@ export default function QuemSomosQuizPage() {
         )
     }
 
-    const question = questions[currentQuestionIndex];
+    const question = quizQuestions[currentQuestionIndex];
     
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
           <div className="relative max-w-2xl mx-auto w-full">
             <AnimatePresence mode="wait">
               <motion.div key={currentQuestionIndex} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl border">
-                <p className="text-sm font-semibold text-brand-azure">Questão {currentQuestionIndex + 1} de {questions.length}</p>
+                <p className="text-sm font-semibold text-brand-azure">Questão {currentQuestionIndex + 1} de {quizQuestions.length}</p>
                 <h2 className="text-xl sm:text-2xl font-bold mt-2 text-brand-dark">{question.question}</h2>
                 <div className="mt-6 space-y-3">
                   {question.options.map((option, index) => {
@@ -141,7 +163,7 @@ export default function QuemSomosQuizPage() {
                 </AnimatePresence>
                 <div className="mt-8 text-right">
                   <button onClick={handleNext} disabled={answers[currentQuestionIndex] === null || isLoading} className="btn-primary disabled:opacity-50">
-                    {isLoading ? 'Aguarde...' : currentQuestionIndex < questions.length - 1 ? 'Próxima' : 'Finalizar Quiz'}
+                    {isLoading ? 'Aguarde...' : currentQuestionIndex < quizQuestions.length - 1 ? 'Próxima' : 'Finalizar Quiz'}
                   </button>
                 </div>
               </motion.div>
