@@ -14,7 +14,7 @@ export interface UserPersonalizations {
 }
 
 export interface QuizAttempt {
-  moduleId: string;
+  moduleId: string; // Pode ser ID do módulo ou ID da página de quiz
   attempts: number;
   passed: boolean;
   score: number;
@@ -43,20 +43,20 @@ export interface User {
   bio: string;
   points: number;
   badges: string[];
-  completedModules: string[];
-  completedPageQuizzes?: string[]; // ✅ CAMPO ADICIONADO
-  quizAttempts: Record<string, QuizAttempt>;
+  completedModules: string[]; // Para módulos do Firebase
+  completedPageQuizzes: string[]; // Para quizzes de páginas estáticas
+  quizAttempts: Record<string, QuizAttempt>; // Chave pode ser moduleId ou pageQuizId
   createdAt: number;
   lastAccess: number | any;
   profileCompleted: boolean;
   onboardingCompleted: boolean;
-  currentRank: number;
-  instituteRank: number;
   welcomeModalSeen: boolean;
   tourSeen: boolean;
   personalizations: UserPersonalizations;
-  onboardingFeedback?: OnboardingFeedback | null; 
+  onboardingFeedback?: OnboardingFeedback | null;
   completionDetails?: CompletionDetails | null;
+  currentRank?: number;
+  instituteRank?: number;
 }
 
 export interface Module {
@@ -69,13 +69,13 @@ export interface Module {
   estimatedMinutes: number;
   imageUrl?: string;
   isRequired: boolean;
-  url?: string;
+  url?: string; // Para links externos como HCX
 }
 
 export interface Notification {
   id: string;
   userId: string;
-  type: 'module_completion' | 'badge_earned' | 'feedback_received' | 'admin_message';
+  type: 'module_completion' | 'badge_earned' | 'feedback_received' | 'admin_message' | 'onboarding_complete';
   message: string;
   read: boolean;
   createdAt: number;
@@ -85,7 +85,7 @@ export interface Notification {
 export interface Certificate {
   id: string;
   userId: string;
-  moduleId: string;
+  moduleId: string; // Pode ser ID do módulo ou 'trilha-institucional-completa'
   moduleTitle: string;
   completionDate: number;
   certificateNumber: string;
@@ -107,6 +107,7 @@ export interface InstitutoConfig {
   color: string;
 }
 
+// Constantes exportadas para uso em outros lugares
 export const INSTITUTOS_ARRAY: Instituto[] = [
   "ICHC", "InCor", "IOT", "IPQ", "InRad", "ICr",
   "ICESP", "IMREA", "LIMs", "IPer", "IGS", "Outros"
@@ -264,3 +265,32 @@ export const INSTITUTOS_CONFIG: Record<Instituto, InstitutoConfig> = {
   "IGS": { name: "IGS", fullName: "Instituto de Gestão e Saúde", logo: "/hc/IGS.png", color: "bg-cyan-500" },
   "Outros": { name: "Outros", fullName: "Outro Instituto", logo: "/hc/ICHC.png", color: "bg-slate-500" },
 };
+
+// ===================================================================
+// CORREÇÃO: Adicionando 'export' nas constantes abaixo
+// ===================================================================
+
+// IDs dos 6 módulos Firebase obrigatórios que compõem o bloco "Institucional"
+export const REQUIRED_FIREBASE_MODULE_IDS: string[] = [
+    'nossa-historia',
+    'cracha-identificacao',
+    'sistemas-corporativos',
+    'seguranca-informacao',
+    'email-sistemas',
+    'servico-voluntario'
+];
+
+// IDs dos 8 quizzes de páginas estáticas obrigatórios
+export const REQUIRED_STATIC_PAGE_QUIZ_IDS: string[] = [
+    'boas-vindas',
+    'quem-somos',
+    'seguranca-trabalho',
+    'beneficios',
+    'guias-conduta',
+    'inovahc',
+    'humanizacao',
+    'comunicacao-rh'
+];
+
+// Total de blocos para exibição no Dashboard (8 estáticos + 1 grupo Firebase)
+export const TOTAL_ONBOARDING_BLOCKS = REQUIRED_STATIC_PAGE_QUIZ_IDS.length + 1;

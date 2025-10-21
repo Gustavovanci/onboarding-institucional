@@ -1,9 +1,11 @@
+// src/components/profile/ProfilePreviewCard.tsx
 import React from 'react';
 import { InstitutoConfig, INSTITUTOS_CONFIG } from '@/types';
 
-// 🔒 Proteção de imagem
+// ✅ Função de limpeza de URL (mesma lógica do RankingPage)
 const cleanPhotoURL = (url: string | null | undefined): string | null => {
   if (!url) return null;
+  // Remove tudo depois do primeiro '=' para limpar tokens do Google
   return url.split('=')[0];
 };
 
@@ -20,17 +22,22 @@ interface ProfilePreviewCardProps {
 
 const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({ user }) => {
   const institutoConfig: InstitutoConfig = INSTITUTOS_CONFIG[user.instituto as keyof typeof INSTITUTOS_CONFIG];
+  
+  // ✅ Limpa a URL e define fallback
+  const cleanedPhotoURL = cleanPhotoURL(user.photoURL);
   const fallbackURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&background=random`;
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <div className="flex items-center gap-4">
         <img
-          src={cleanPhotoURL(user.photoURL) || fallbackURL}
+          src={cleanedPhotoURL || fallbackURL}
           alt={user.displayName}
           className="w-16 h-16 rounded-full object-cover"
           referrerPolicy="no-referrer"
-          onError={(e) => (e.currentTarget.src = fallbackURL)}
+          onError={(e) => {
+            e.currentTarget.src = fallbackURL;
+          }}
         />
         <div>
           <h3 className="text-xl font-bold text-gray-900">{user.displayName}</h3>

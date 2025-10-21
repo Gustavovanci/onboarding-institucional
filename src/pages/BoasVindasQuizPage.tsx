@@ -1,10 +1,11 @@
 // src/pages/BoasVindasQuizPage.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; // Import useRef
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { useProgressStore } from '../stores/progressStore';
+import { useProgressStore } from '../stores/progressStore'; // Import progressStore
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, Award } from 'lucide-react';
+import FeedbackModal from '../components/ui/FeedbackModal'; // Import FeedbackModal
 
 const quizQuestions = [
     {
@@ -21,29 +22,31 @@ const quizQuestions = [
     }
 ];
 
+// Define ID e pontos para este quiz específico
+const PAGE_QUIZ_ID = 'boas-vindas';
+const QUIZ_POINTS = 100; // Pontuação do badge 'checkin-hc' associado anteriormente
+
 export default function BoasVindasQuizPage() {
     const navigate = useNavigate();
     const { user } = useAuthStore();
-    const { awardBadgeAndPoints, isLoading } = useProgressStore();
+    // Usa a nova função e o controle do modal
+    const { completePageQuiz, isLoading: isProgressLoading, showFeedbackModal, closeFeedbackModal } = useProgressStore();
 
-    const badgeId = 'checkin-hc';
-    const isCompleted = user?.badges.includes(badgeId);
+    // Verifica se *este quiz* já foi completado
+    const isQuizCompleted = user?.completedPageQuizzes?.includes(PAGE_QUIZ_ID);
+    const initialIsCompleted = useRef(isQuizCompleted); // Guarda estado inicial
 
     const [answers, setAnswers] = useState<(number | null)[]>(new Array(quizQuestions.length).fill(null));
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [quizFinished, setQuizFinished] = useState(false);
-    const [showFeedback, setShowFeedback] = useState(false);
+    const [showFeedback, setShowFeedback] = useState(false); // Feedback da questão
 
-    // ✅ CORREÇÃO APLICADA:
-    // Adicionado useEffect para redirecionar se o quiz já foi concluído.
-    // Exatamente como funciona na página de quiz "Quem Somos".
+    // Redireciona se já completou no carregamento
     useEffect(() => {
-        if (isCompleted) {
-            // Se o usuário tentar acessar a URL do quiz diretamente,
-            // ele é redirecionado para a página de conteúdo inicial da seção.
+        if (initialIsCompleted.current) {
             navigate('/boas-vindas', { replace: true });
         }
-    }, [isCompleted, navigate]);
+    }, [navigate]);
 
     const handleAnswer = (optionIndex: number) => {
         if (showFeedback) return;
@@ -54,81 +57,109 @@ export default function BoasVindasQuizPage() {
     };
 
     const handleNext = async () => {
-        if (!showFeedback) return;
+        if (!showFeedback || !user) return;
 
-        setShowFeedback(false);
+        setShowFeedback(false); // Esconde feedback da questão atual
 
         if (currentQuestionIndex < quizQuestions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
         } else {
-            setQuizFinished(true);
-            const score = answers.reduce((acc, answer, index) => (answer === quizQuestions[index]?.correct ? acc + 1 : acc), 0);
-            const passed = score / quizQuestions.length >= 0.7;
+            setQuizFinished(true); // Finaliza o quiz
+            const score = answers.reduce((acc, answer, index) => (answer === quizQuestions[index].correct ? acc + 1 : acc), 0);
+            const passed = (score / quizQuestions.length) >= 0.7; // Exemplo: 70%
 
-            if (passed && !isCompleted) {
-                await awardBadgeAndPoints(user!.uid, badgeId);
+            // Verifica se este quiz já foi completado ANTES de tentar completar de novo
+            const alreadyCompleted = useAuthStore.getState().user?.completedPageQuizzes?.includes(PAGE_QUIZ_ID);
+
+            if (passed && !alreadyCompleted) {
+                console.log(`[BoasVindasQuiz] Chamando completePageQuiz para ${PAGE_QUIZ_ID}`);
+                // Chama a função correta para registrar a conclusão DESTE quiz
+                await completePageQuiz(user.uid, PAGE_QUIZ_ID, QUIZ_POINTS);
+                // A verificação geral (checkAndCompleteOnboarding) é chamada DENTRO de completePageQuiz
+            } else if (passed && alreadyCompleted){
+                 console.log(`[BoasVindasQuiz] Quiz já completo, verificando estado geral do onboarding...`);
+                 // Se já estava completo e passou de novo, apenas verifica o onboarding geral
+                 await useProgressStore.getState().checkAndCompleteOnboarding(user.uid);
             }
-            if(passed) {
+
+            // Adiciona um pequeno delay antes de navegar se passou, para o usuário ver a mensagem
+            if (passed && !useProgressStore.getState().showFeedbackModal) {
                 setTimeout(() => {
-                    // Mantém o redirecionamento para a próxima etapa da trilha.
-                    navigate('/quem-somos', { replace: true });
+                    navigate('/modules'); // Navega para a trilha principal após sucesso
                 }, 2000);
             }
         }
     };
-    
+
     const score = answers.reduce((acc, answer, index) => (answer === quizQuestions[index]?.correct ? acc + 1 : acc), 0);
     const percentage = quizFinished ? (score / quizQuestions.length) * 100 : 0;
-    const passed = percentage >= 70;
+    const passed = percentage >= 70; // Usa a mesma condição de aprovação
 
+    // --- Tela de Finalização ---
     if (quizFinished) {
         return (
-             <div 
-                className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
-                style={{ backgroundImage: "url('/fundo_backdropv2.jpg')" }}
-            >
-                <div className="absolute inset-0 bg-brand-green3/80"></div>
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative max-w-2xl mx-auto text-center p-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border">
-                    <Award className={`w-20 h-20 mx-auto ${passed ? 'text-brand-green1' : 'text-brand-red'}`} />
-                    <h2 className="text-3xl font-bold mt-4">{passed ? 'Parabéns!' : 'Tente novamente!'}</h2>
-                    {passed ? (
-                         <p className="text-gray-600 mt-2">Você concluiu esta etapa! Redirecionando para o próximo passo...</p>
-                    ) : (
-                         <p className="text-gray-600 mt-2">Você não atingiu a pontuação mínima (70%). Estude o conteúdo e tente novamente para ganhar seus pontos.</p>
-                    )}
-                    <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                    {!passed && (
-                        <button onClick={() => window.location.reload()} className="btn-primary w-full">
-                            Tentar Novamente
-                        </button>
-                    )}
-                     {passed && (
-                        <button onClick={() => navigate('/quem-somos')} className="btn-primary w-full">
-                            Continuar
-                        </button>
-                    )}
-                    </div>
-                </motion.div>
-            </div>
-       )
+             <>
+                {/* Renderiza o Modal de Feedback GERAL se o estado global for true */}
+                <FeedbackModal
+                  isOpen={showFeedbackModal}
+                  onClose={() => {
+                    closeFeedbackModal(); // Fecha o modal via store
+                    navigate('/certificates'); // Navega para certificados após fechar
+                  }}
+                />
+                {/* Tela de Resultado do Quiz */}
+                <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50" style={{ backgroundImage: "url('/fundo_backdropv2.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                    <div className="absolute inset-0 bg-brand-green3/80"></div>
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative max-w-2xl mx-auto text-center p-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border">
+                        <Award className={`w-20 h-20 mx-auto ${passed ? 'text-brand-green1' : 'text-brand-red'}`} />
+                        <h2 className="text-3xl font-bold mt-4">{passed ? 'Quiz Concluído!' : 'Tente novamente!'}</h2>
+                        <p className="text-gray-600 mt-2">
+                            {passed ? `Você concluiu com ${percentage.toFixed(0)}% de acertos! ${!showFeedbackModal ? 'Redirecionando...' : ''}` : `Você atingiu ${percentage.toFixed(0)}%, mas o mínimo é 70%. Estude o conteúdo e tente novamente.`}
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                            {!passed && (
+                                <button onClick={() => window.location.reload()} className="btn-secondary w-full">
+                                Tentar Novamente
+                                </button>
+                            )}
+                            {/* Botão Continuar só aparece se passou E o modal GERAL não está ativo */}
+                            {passed && !showFeedbackModal && (
+                                <button onClick={() => navigate('/modules')} className="btn-primary w-full">
+                                    Continuar Trilha
+                                </button>
+                            )}
+                            {/* Botão Voltar (se não passou) */}
+                             {!passed && (
+                                <button onClick={() => navigate('/modules')} className="btn-primary w-full">
+                                    Voltar para Trilha
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
+                </div>
+            </>
+        )
     }
 
+    // --- Tela do Quiz (Questões) ---
+     // (Conteúdo da tela de quiz permanece o mesmo, apenas a lógica do handleNext foi ajustada)
     const question = quizQuestions[currentQuestionIndex];
-    
+
     return (
-        <div 
+        // Conteúdo JSX da tela de quiz (inalterado)
+        <div
             className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
             style={{ backgroundImage: "url('/fundo_backdropv2.jpg')" }}
         >
             <div className="absolute inset-0 bg-brand-green3/50"></div>
             <div className="relative max-w-2xl mx-auto w-full">
                 <AnimatePresence mode="wait">
-                    <motion.div 
-                        key={currentQuestionIndex} 
-                        initial={{ opacity: 0, y: 20 }} 
-                        animate={{ opacity: 1, y: 0 }} 
-                        exit={{ opacity: 0, y: -20 }} 
-                        transition={{ duration: 0.3 }} 
+                    <motion.div
+                        key={currentQuestionIndex}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
                         className="bg-white/90 backdrop-blur-sm p-6 sm:p-8 rounded-2xl shadow-xl border"
                     >
                         <p className="text-sm font-semibold text-brand-azure">Questão {currentQuestionIndex + 1} de {quizQuestions.length}</p>
@@ -146,10 +177,10 @@ export default function BoasVindasQuizPage() {
                                     stateClasses = 'bg-blue-100 border-brand-azure';
                                 }
                                 return (
-                                <motion.button 
-                                    key={index} 
-                                    onClick={() => handleAnswer(index)} 
-                                    disabled={showFeedback} 
+                                <motion.button
+                                    key={index}
+                                    onClick={() => handleAnswer(index)}
+                                    disabled={showFeedback}
                                     className={`w-full text-left p-4 border-2 rounded-lg transition-all duration-200 flex items-center justify-between disabled:cursor-not-allowed ${stateClasses}`}
                                 >
                                     <span>{option}</span>
@@ -161,22 +192,22 @@ export default function BoasVindasQuizPage() {
                         </div>
                         <AnimatePresence>
                         {showFeedback && (
-                            <motion.div 
-                                initial={{ opacity: 0, y: 10 }} 
-                                animate={{ opacity: 1, y: 0 }} 
-                                transition={{ delay: 0.2 }} 
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
                                 className="mt-4"
                             >
                                 <div className="p-3 bg-gray-100 rounded-lg text-sm text-gray-700">
                                     <strong>Feedback:</strong> {question.explanation}
                                 </div>
                                 <div className="mt-4 text-right">
-                                    <button 
-                                        onClick={handleNext} 
-                                        disabled={isLoading} 
+                                    <button
+                                        onClick={handleNext}
+                                        disabled={isProgressLoading}
                                         className="btn-primary disabled:opacity-50"
                                     >
-                                        {isLoading ? 'Aguarde...' : currentQuestionIndex < quizQuestions.length - 1 ? 'Próxima' : 'Finalizar'}
+                                        {isProgressLoading ? 'Aguarde...' : currentQuestionIndex < quizQuestions.length - 1 ? 'Próxima' : 'Finalizar'}
                                     </button>
                                 </div>
                             </motion.div>

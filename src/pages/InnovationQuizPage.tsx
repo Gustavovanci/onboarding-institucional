@@ -1,10 +1,11 @@
 // src/pages/InnovationQuizPage.tsx
-import { useState, useEffect, useRef } from 'react'; // Import useRef
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { useProgressStore } from '../stores/progressStore';
+import { useProgressStore } from '../stores/progressStore'; // Import progressStore
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, Award } from 'lucide-react';
+import FeedbackModal from '../components/ui/FeedbackModal'; // Import FeedbackModal
 
 const quizQuestions = [
     {
@@ -20,29 +21,31 @@ const quizQuestions = [
     }
 ];
 
+// Define ID e pontos para este quiz específico
+const PAGE_QUIZ_ID = 'inovahc';
+const QUIZ_POINTS = 100; // Pontos definidos na versão anterior
+
 export default function InnovationQuizPage() {
     const navigate = useNavigate();
     const { user } = useAuthStore();
-    const { completeModule, isLoading } = useProgressStore();
+    // Usa a nova função e o controle do modal
+    const { completePageQuiz, isLoading: isProgressLoading, showFeedbackModal, closeFeedbackModal } = useProgressStore();
 
-    const moduleId = 'inovahc';
-    const initialIsCompleted = useRef(user?.completedModules?.includes(moduleId)); // ✅ Guarda o estado inicial
-    const isCompleted = user?.completedModules?.includes(moduleId);
+    // Verifica se *este quiz* já foi completado
+    const isQuizCompleted = user?.completedPageQuizzes?.includes(PAGE_QUIZ_ID);
+    const initialIsCompleted = useRef(isQuizCompleted); // Guarda estado inicial
 
     const [answers, setAnswers] = useState<(number | null)[]>(new Array(quizQuestions.length).fill(null));
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [quizFinished, setQuizFinished] = useState(false);
-    const [showFeedback, setShowFeedback] = useState(false);
+    const [showFeedback, setShowFeedback] = useState(false); // Feedback da questão
 
-    // ✅ CORREÇÃO APLICADA: Redireciona APENAS se o quiz JÁ ESTAVA completo ao carregar a página
+    // Redireciona se já completou no carregamento
     useEffect(() => {
-        // Usa o valor inicial guardado no useRef. Se era true no início, redireciona.
         if (initialIsCompleted.current) {
             navigate('/innovation', { replace: true });
         }
-        // O array vazio [] garante que este efeito só roda uma vez no carregamento inicial.
     }, [navigate]);
-
 
     const handleAnswer = (optionIndex: number) => {
         if (showFeedback) return;
@@ -53,72 +56,86 @@ export default function InnovationQuizPage() {
     };
 
     const handleNext = async () => {
-        if (!showFeedback) return;
+        if (!showFeedback || !user) return;
 
-        const isLastQuestion = currentQuestionIndex === quizQuestions.length - 1;
+        setShowFeedback(false); // Esconde feedback da questão atual
 
-        if (isLastQuestion) {
-            setQuizFinished(true); // Mostra a tela final
-            const score = answers.reduce((acc, answer, index) => (answer === quizQuestions[index]?.correct ? acc + 1 : acc), 0);
-            const passed = (score / quizQuestions.length) >= 0.7;
-
-            // Verifica se o usuário ATUAL (do useAuthStore) ainda não tem o módulo como completo
-            // Isso evita chamar completeModule múltiplas vezes se o estado demorar a atualizar
-            const currentUserIsCompleted = useAuthStore.getState().user?.completedModules?.includes(moduleId);
-
-            if (passed && !currentUserIsCompleted && user) {
-                 await completeModule(user.uid, { id: moduleId, points: 100, isRequired: true });
-                 // Atualiza a referência inicial para evitar redirecionamento futuro nesta sessão se o usuário voltar
-                 initialIsCompleted.current = true;
-            }
-        } else {
-            setShowFeedback(false);
+        if (currentQuestionIndex < quizQuestions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
+        } else {
+            setQuizFinished(true); // Finaliza o quiz
+            const score = answers.reduce((acc, answer, index) => (answer === quizQuestions[index].correct ? acc + 1 : acc), 0);
+            const passed = (score / quizQuestions.length) >= 0.7; // Exemplo: 70%
+
+            const alreadyCompleted = useAuthStore.getState().user?.completedPageQuizzes?.includes(PAGE_QUIZ_ID);
+
+            if (passed && !alreadyCompleted) {
+                 console.log(`[InnovationQuiz] Chamando completePageQuiz para ${PAGE_QUIZ_ID}`);
+                // Chama a função para registrar a conclusão DESTE quiz
+                await completePageQuiz(user.uid, PAGE_QUIZ_ID, QUIZ_POINTS);
+                 // A verificação geral (checkAndCompleteOnboarding) é chamada DENTRO de completePageQuiz
+            } else if (passed && alreadyCompleted){
+                 console.log(`[InnovationQuiz] Quiz já completo, verificando estado geral do onboarding...`);
+                 await useProgressStore.getState().checkAndCompleteOnboarding(user.uid);
+            }
+             // Não navega automaticamente aqui, deixa o usuário clicar no botão
         }
     };
 
-    // --- Cálculo de Score (sem mudanças) ---
     const score = answers.reduce((acc, answer, index) => (answer === quizQuestions[index]?.correct ? acc + 1 : acc), 0);
     const percentage = quizFinished ? (score / quizQuestions.length) * 100 : 0;
-    const passed = percentage >= 70;
+    const passed = percentage >= 70; // Usa a mesma condição de aprovação
 
-    // --- Tela de Finalização Padrão (sem mudanças) ---
+    // --- Tela de Finalização ---
     if (quizFinished) {
          return (
-             <div
-                className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
-                style={{ backgroundImage: "url('/fundo_backdropv2.jpg')" }}
-            >
-                <div className="absolute inset-0 bg-brand-green3/80"></div>
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative max-w-2xl mx-auto text-center p-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border">
-                    <Award className={`w-20 h-20 mx-auto ${passed ? 'text-brand-green1' : 'text-brand-red'}`} />
-                    <h2 className="text-3xl font-bold mt-4">{passed ? 'Parabéns!' : 'Tente novamente!'}</h2>
-                    {passed ? (
-                         <p className="text-gray-600 mt-2">Você concluiu esta etapa com {percentage.toFixed(0)}% de acertos!</p>
-                    ) : (
-                         <p className="text-gray-600 mt-2">Você não atingiu a pontuação mínima. Estude o conteúdo e tente novamente.</p>
-                    )}
-                    <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                    {!passed ? (
-                        <button onClick={() => window.location.reload()} className="btn-secondary w-full">
-                            Tentar Novamente
-                        </button>
-                    ) : (
-                        <button onClick={() => navigate('/modules')} className="btn-primary w-full">
-                            Continuar Trilha
-                        </button>
-                    )}
-                    </div>
-                </motion.div>
-            </div>
+             <>
+                {/* Renderiza o Modal de Feedback GERAL se o estado global for true */}
+                <FeedbackModal
+                  isOpen={showFeedbackModal}
+                  onClose={() => {
+                    closeFeedbackModal(); // Fecha o modal via store
+                    navigate('/certificates'); // Navega após fechar
+                  }}
+                />
+                {/* Tela de Resultado do Quiz */}
+                <div
+                    className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
+                    style={{ backgroundImage: "url('/fundo_backdropv2.jpg')" }}
+                >
+                    <div className="absolute inset-0 bg-brand-green3/80"></div>
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative max-w-2xl mx-auto text-center p-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border">
+                        <Award className={`w-20 h-20 mx-auto ${passed ? 'text-brand-green1' : 'text-brand-red'}`} />
+                        <h2 className="text-3xl font-bold mt-4">{passed ? 'Parabéns!' : 'Tente novamente!'}</h2>
+                        <p className="text-gray-600 mt-2">
+                            {passed ? `Você concluiu esta etapa com ${percentage.toFixed(0)}% de acertos!` : `Você não atingiu a pontuação mínima. Estude o conteúdo e tente novamente.`}
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                        {!passed ? (
+                            <button onClick={() => window.location.reload()} className="btn-secondary w-full">
+                                Tentar Novamente
+                            </button>
+                        ) : null }
+                         {/* Botão Continuar/Voltar só aparece se o modal GERAL não estiver ativo */}
+                         {!showFeedbackModal && (
+                            <button onClick={() => navigate('/modules')} className="btn-primary w-full">
+                                {passed ? 'Continuar Trilha' : 'Voltar para Trilha'}
+                            </button>
+                         )}
+                        </div>
+                    </motion.div>
+                </div>
+            </>
         )
     }
 
-    // --- Tela do Quiz Padrão (sem mudanças) ---
+    // --- Tela do Quiz (Questões) ---
+     // (Conteúdo da tela de quiz permanece o mesmo)
     const question = quizQuestions[currentQuestionIndex];
 
     return (
-        <div
+        // Conteúdo JSX da tela de quiz (inalterado)
+         <div
             className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
             style={{ backgroundImage: "url('/fundo_backdropv2.jpg')" }}
         >
@@ -176,10 +193,10 @@ export default function InnovationQuizPage() {
                                 <div className="mt-4 text-right">
                                     <button
                                         onClick={handleNext}
-                                        disabled={isLoading}
+                                        disabled={isProgressLoading}
                                         className="btn-primary disabled:opacity-50"
                                     >
-                                        {isLoading ? 'Aguarde...' : currentQuestionIndex < quizQuestions.length - 1 ? 'Próxima' : 'Finalizar'}
+                                        {isProgressLoading ? 'Aguarde...' : currentQuestionIndex < quizQuestions.length - 1 ? 'Próxima' : 'Finalizar'}
                                     </button>
                                 </div>
                             </motion.div>

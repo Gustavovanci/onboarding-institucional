@@ -8,6 +8,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import BadgeDisplay from '../badges/BadgeDisplay';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+// ✅ Função de limpeza centralizada
+const cleanPhotoURL = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  return url.split('=')[0];
+};
+
 export default function Header() {
   const { user, logout } = useAuthStore();
   const { notifications, unreadCount, fetchNotifications, markAllAsRead, deleteNotification } = useNotificationStore();
@@ -22,13 +29,10 @@ export default function Header() {
 
   if (!user) return null;
   
-  // Limpa URLs longas do Google que causam CORS
-  const cleanPhotoURL = (url: string | null | undefined) => {
-    if (!url) return null;
-    return url.split('=')[0];
-  };
-
-  const userPhotoURL = cleanPhotoURL(user.photoURL) || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&background=random`;
+  // ✅ Aplica limpeza e fallback
+  const cleanedPhotoURL = cleanPhotoURL(user.photoURL);
+  const fallbackURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&background=random`;
+  const userPhotoURL = cleanedPhotoURL || fallbackURL;
   
   const handleBellClick = () => {
     setShowNotifications(prev => {
@@ -81,10 +85,10 @@ export default function Header() {
                     src={userPhotoURL}
                     alt={user.displayName}
                     className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-white shadow-sm rounded-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&background=random`;
-                    }}
                     referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.src = fallbackURL;
+                    }}
                   />
                 </button>
                 
@@ -138,11 +142,10 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Painel de Notificações - Desktop: Dropdown | Mobile: Fullscreen */}
+      {/* Painel de Notificações */}
       <AnimatePresence>
         {showNotifications && (
           <>
-            {/* Overlay para fechar ao clicar fora (apenas mobile) */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -151,7 +154,6 @@ export default function Header() {
               className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[60] md:hidden"
             />
 
-            {/* Painel de Notificações */}
             <motion.div
               initial={{ 
                 opacity: 0, 
@@ -174,7 +176,6 @@ export default function Header() {
                          bg-white md:rounded-lg shadow-2xl border-0 md:border z-[70]
                          flex flex-col"
             >
-              {/* Header do Painel */}
               <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-brand-azure to-blue-600 md:bg-none md:from-transparent md:to-transparent">
                 <h3 className="font-bold text-white md:text-gray-800 text-lg">
                   Notificações
@@ -192,7 +193,6 @@ export default function Header() {
                 </button>
               </div>
 
-              {/* Lista de Notificações */}
               <div className="flex-1 overflow-y-auto overscroll-contain">
                 {notifications.length > 0 ? (
                   <div className="divide-y divide-gray-100">
@@ -206,12 +206,10 @@ export default function Header() {
                           !notification.read ? 'bg-blue-50/50' : ''
                         }`}
                       >
-                        {/* Indicador de não lida */}
                         {!notification.read && (
                           <div className="w-2 h-2 mt-2 rounded-full bg-brand-azure flex-shrink-0" />
                         )}
 
-                        {/* Conteúdo da Notificação */}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-gray-800 leading-relaxed break-words">
                             {notification.message}
@@ -224,7 +222,6 @@ export default function Header() {
                           </p>
                         </div>
 
-                        {/* Botão Deletar */}
                         <button
                           onClick={(e) => handleDeleteNotification(e, notification.id)}
                           className="p-1.5 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
@@ -246,14 +243,10 @@ export default function Header() {
                 )}
               </div>
 
-              {/* Footer (opcional - apenas se houver notificações) */}
               {notifications.length > 0 && (
                 <div className="border-t p-3 bg-gray-50">
                   <button
-                    onClick={() => {
-                      // Aqui você pode adicionar lógica para "ver todas"
-                      setShowNotifications(false);
-                    }}
+                    onClick={() => setShowNotifications(false)}
                     className="w-full text-sm text-brand-azure hover:text-blue-700 font-medium transition-colors"
                   >
                     Ver histórico completo

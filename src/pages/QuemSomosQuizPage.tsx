@@ -38,8 +38,8 @@ const QUIZ_POINTS = 50; // Pontos para este quiz (do antigo badge quiz-quem-somo
 export default function QuemSomosQuizPage() {
     const navigate = useNavigate();
     const { user } = useAuthStore();
-    // Usa funções do progressStore
-    const { completePageQuiz, checkAndCompleteOnboarding, isLoading: isProgressLoading, showFeedbackModal, closeFeedbackModal } = useProgressStore();
+    // Usa funções e estado do progressStore
+    const { completePageQuiz, isLoading: isProgressLoading, showFeedbackModal, closeFeedbackModal } = useProgressStore();
 
     // Verifica se *este quiz* já foi completado
     const isQuizCompleted = user?.completedPageQuizzes?.includes(PAGE_QUIZ_ID);
@@ -68,26 +68,33 @@ export default function QuemSomosQuizPage() {
     const handleNext = async () => {
         if (!showFeedback || !user) return;
 
-        const isLastQuestion = currentQuestionIndex === quizQuestions.length - 1;
+        setShowFeedback(false); // Esconde feedback da questão atual
 
-        if (isLastQuestion) {
-            setQuizFinished(true);
+        if (currentQuestionIndex < quizQuestions.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+        } else {
+            setQuizFinished(true); // Finaliza o quiz
             const score = answers.reduce((acc, answer, index) => (answer === quizQuestions[index].correct ? acc + 1 : acc), 0);
             const passed = (score / quizQuestions.length) >= 0.7; // Exemplo: 70%
 
             const alreadyCompleted = useAuthStore.getState().user?.completedPageQuizzes?.includes(PAGE_QUIZ_ID);
 
             if (passed && !alreadyCompleted) {
-                // Chama a função do store para registrar a conclusão DESTE quiz
+                 console.log(`[QuemSomosQuiz] Chamando completePageQuiz para ${PAGE_QUIZ_ID}`);
+                // Chama a função para registrar a conclusão DESTE quiz
                 await completePageQuiz(user.uid, PAGE_QUIZ_ID, QUIZ_POINTS);
-                // A verificação geral (checkAndCompleteOnboarding) é chamada DENTRO de completePageQuiz
+                 // A verificação geral (checkAndCompleteOnboarding) é chamada DENTRO de completePageQuiz
             } else if (passed && alreadyCompleted){
-                 // Se já estava completo e passou de novo, apenas verifica o onboarding geral
-                 await checkAndCompleteOnboarding(user.uid);
+                 console.log(`[QuemSomosQuiz] Quiz já completo, verificando estado geral do onboarding...`);
+                 await useProgressStore.getState().checkAndCompleteOnboarding(user.uid);
             }
-        } else {
-            setShowFeedback(false);
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
+
+             // Adiciona delay antes de navegar se passou E modal não está ativo
+             if (passed && !useProgressStore.getState().showFeedbackModal) {
+                 setTimeout(() => {
+                     navigate('/modules');
+                 }, 2000);
+             }
         }
     };
 
@@ -99,7 +106,7 @@ export default function QuemSomosQuizPage() {
     if (quizFinished) {
         return (
              <>
-                {/* Renderiza o Modal de Feedback se o estado global for true */}
+                {/* Renderiza o Modal de Feedback GERAL se o estado global for true */}
                 <FeedbackModal
                   isOpen={showFeedbackModal}
                   onClose={() => {
@@ -114,7 +121,7 @@ export default function QuemSomosQuizPage() {
                         <Award className={`w-20 h-20 mx-auto ${passed ? 'text-brand-green1' : 'text-brand-red'}`} />
                         <h2 className="text-3xl font-bold mt-4">{passed ? 'Quiz Concluído!' : 'Tente novamente!'}</h2>
                         <p className="text-gray-600 mt-2">
-                            {passed ? `Você concluiu com ${percentage.toFixed(0)}% de acertos!` : `Você atingiu ${percentage.toFixed(0)}%, mas o mínimo é 70%. Estude o conteúdo e tente novamente.`}
+                            {passed ? `Você concluiu com ${percentage.toFixed(0)}% de acertos! ${!showFeedbackModal ? 'Redirecionando...' : ''}` : `Você atingiu ${percentage.toFixed(0)}%, mas o mínimo é 70%. Estude o conteúdo e tente novamente.`}
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 mt-8">
                             {!passed && (
@@ -122,7 +129,7 @@ export default function QuemSomosQuizPage() {
                                 Tentar Novamente
                                 </button>
                             )}
-                            {/* Só mostra "Continuar Trilha" se o modal de feedback NÃO estiver ativo */}
+                            {/* Botão Continuar/Voltar só aparece se o modal GERAL não estiver ativo */}
                             {!showFeedbackModal && (
                                 <button onClick={() => navigate('/modules')} className="btn-primary w-full">
                                     {passed ? 'Continuar Trilha' : 'Voltar para Trilha'}
@@ -136,12 +143,12 @@ export default function QuemSomosQuizPage() {
     }
 
     // --- Tela do Quiz (Questões) ---
-    const question = quizQuestions[currentQuestionIndex];
+    // (Conteúdo da tela de quiz permanece o mesmo)
+     const question = quizQuestions[currentQuestionIndex];
 
     return (
-        <>
-            {/* Tela das Questões */}
-            <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50" style={{ backgroundImage: "url('/fundo_backdropv2.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        // Conteúdo JSX da tela de quiz (inalterado)
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50" style={{ backgroundImage: "url('/fundo_backdropv2.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
             <div className="absolute inset-0 bg-brand-green3/50"></div>
             <div className="relative max-w-2xl mx-auto w-full">
                 <AnimatePresence mode="wait">
@@ -187,14 +194,5 @@ export default function QuemSomosQuizPage() {
                 </AnimatePresence>
             </div>
             </div>
-            {/* Modal Global */}
-            <FeedbackModal
-                isOpen={showFeedbackModal}
-                onClose={() => {
-                    closeFeedbackModal();
-                    navigate('/certificates');
-                }}
-            />
-        </>
     );
 }

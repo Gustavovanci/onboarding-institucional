@@ -53,8 +53,7 @@ const LoginPage = () => {
         >
           <motion.img 
             variants={itemVariants}
-            src="/hc/HCFMUSP.png" 
-            alt="HCFMUSP Logo" 
+           
             className="w-40 md:w-48 mb-6 drop-shadow-2xl"
           />
           <motion.h1 
